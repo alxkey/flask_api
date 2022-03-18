@@ -3,7 +3,7 @@ from flask.views import MethodView
 from marshmallow import ValidationError
 
 from controller import ArticleController, LikeController, CommentController
-from validation import SchemaAddArticle, SchemaAddLike, SchemaAddComment
+from validation import SchemaAddArticle, SchemaUpdateArticle, SchemaAddLike, SchemaAddComment
 
 
 class ArticleView(MethodView):
@@ -20,6 +20,7 @@ class ArticleView(MethodView):
             return result
         else:
             result = self.__get_by_name(name)
+            return result
 
     def __get(self) -> dict:
         result = self.controller.get()
@@ -45,6 +46,16 @@ class ArticleView(MethodView):
             return err
         else:
             result = self.controller.post(data)
+            return result
+
+    def put(self) -> dict or str:
+        data = request.get_json()
+        try:
+            SchemaUpdateArticle().load(data)
+        except ValidationError as err:
+            return err
+        else:
+            result = self.controller.put(data)
             return result
 
     def delete(self, article_id: str, name: str) -> dict:
@@ -181,6 +192,16 @@ class CommentView(MethodView):
             return err
         else:
             result = self.controller.post(data)
+            return result
+
+    def put(self) -> dict or str:
+        data = request.get_json()
+        try:
+            SchemaAddComment().load(data)
+        except ValidationError as err:
+            return err
+        else:
+            result = self.controller.put(data)
             return result
 
     def delete(self, article_id: str, author_id: str, title: str, name: str) -> dict:

@@ -22,8 +22,13 @@ class ArticleController:
          serializer = jsonify(article)
          return serializer
 
-     def post(self,new_article: dict):
+     def post(self, new_article: dict):
          article_id = self.models.post(new_article)
+         serializer = jsonify(article_id)
+         return serializer
+
+     def put(self, update_article: dict):
+         article_id = self.models.put(update_article)
          serializer = jsonify(article_id)
          return serializer
 
@@ -95,8 +100,13 @@ class CommentController:
         serializer = jsonify(article)
         return serializer
 
-    def post(self, new_article: dict):
-        article_id = self.models.post(new_article)
+    def post(self, data: dict):
+        article_id = self.models.post(data)
+        serializer = jsonify(article_id)
+        return serializer
+
+    def put(self, data: dict):
+        article_id = self.models.put(data)
         serializer = jsonify(article_id)
         return serializer
 

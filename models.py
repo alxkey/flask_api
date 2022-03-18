@@ -2,29 +2,87 @@ import psycopg2
 from flask import make_response
 from abc import ABC, abstractmethod
 
-import config
+from config import DB_NAME, USER, PASSWORD, HOST, PORT
 
 
 class AbstractModels(ABC):
     def __init__(self):
-        self.param = {'database': config.database,
-                     'user': config.user,
-                     'password': config.password,
-                     'host': config.host,
-                     'port': config.port }
+        self.param = {'database': DB_NAME,
+                     'user': USER,
+                     'password': PASSWORD,
+                     'host': HOST,
+                     'port': PORT }
         self.conn = psycopg2.connect(**self.param)
         self.cur = self.conn.cursor()
 
     @abstractmethod
-    def get(self, id: str, name: str):
+    def get(self):
+        '''
+        get all resources
+        :return: list of resources
+        '''
+        pass
+
+    @abstractmethod
+    def get_by_id(self, id: str):
+        '''
+        get resource by id
+        :param id: id of resource
+        :return: list of resource
+        '''
+        pass
+
+    @abstractmethod
+    def get_by_name(self, name: str):
+        '''
+        get resource by name
+        :param name: name of resource
+        :return: list of resource
+        '''
         pass
 
     @abstractmethod
     def post(self, data: dict):
+        '''
+        resource creation
+        :param data: resource parameter dic
+        :return: resource id or response code
+        '''
         pass
 
     @abstractmethod
-    def delete(self, a_id: str, b_id: str, title: str, name: str):
+    def put(self, data: dict):
+        '''
+        resource updating
+        :param data: resource parameter dic
+        :return: response code
+        '''
+        pass
+
+    @abstractmethod
+    def delete(self):
+        '''
+        deleting all resources
+        :return: response code
+        '''
+        pass
+
+    @abstractmethod
+    def delete_by_id(self, id: str):
+        '''
+        deleting a resource by id
+        :param id: id of the resource to be deleted
+        :return: response code
+        '''
+        pass
+
+    @abstractmethod
+    def delete_by_name(self, name: str):
+        '''
+        deleting a resource by name
+        :param name: name of the resource to be deleted
+        :return: response code
+        '''
         pass
 
     def __del__(self):
@@ -40,6 +98,7 @@ class ArticleModels(AbstractModels):
                where is_deleted = false;'
         self.cur.execute(sql)
         values = self.cur.fetchall()
+        print(values)
         response = []
         for value in values:
             result = dict(zip(keys, value))
@@ -54,6 +113,7 @@ class ArticleModels(AbstractModels):
                 AND is_deleted = false;'
         self.cur.execute(sql)
         values = self.cur.fetchall()
+        values = values[0]
         response = dict(zip(keys, values))
         return response
 
@@ -61,11 +121,11 @@ class ArticleModels(AbstractModels):
         keys = ('title', 'text', 'date', 'author_id')
         sql = f'SELECT name, article_text, pub_date, users_id\
                 FROM articles\
-                WHERE name = {name}\
+                WHERE name = {name} \
                 AND is_deleted = false;'
-
         self.cur.execute(sql)
         values = self.cur.fetchall()
+        values = values[0]
         response = dict(zip(keys, values))
         return response
 
@@ -78,6 +138,25 @@ class ArticleModels(AbstractModels):
         self.conn.commit()
         values = self.cur.fetchone()
         response = {'article_id': values[0]}
+        return response
+
+    def put(self, data: dict) -> str:
+        keys = ('name', 'text', 'date')
+        sql = f"SELECT name, article_text, pub_date FROM articles\
+                WHERE id = '{data['id']}';"
+        self.cur.execute(sql)
+        values = self.cur.fetchall()
+        values=values[0]
+        dict_from_db = dict(zip(keys, values))
+        dict_for_db = {**dict_from_db, **data}
+        sql = f"UPDATE articles SET name = '{dict_for_db.get('name')}',\
+                article_text = '{dict_for_db.get('text')}',\
+                pub_date = '{dict_for_db.get('date')}'\
+                WHERE id = '{data['id']}' \
+                AND is_deleted = false;"
+        self.cur.execute(sql)
+        self.conn.commit()
+        response = '"Ok 200", 200 '
         return response
 
     def delete(self) -> str:
@@ -227,6 +306,16 @@ class CommentModels(AbstractModels):
     def post(self, data: dict) -> dict:
         sql = f"insert into comments(aricles_id, users_id, comment_text)\
                 values('{data['article_id']}', '{data['user_id']}', '{data['comment']}');"
+        self.cur.execute(sql)
+        self.conn.commit()
+        response = '"Ok 200", 200 '
+        return response
+
+    def put(self, data: dict) -> dict:
+        sql = f"update comments set comment_text = '{data['comment']}'\
+                where articles_id = '{data['article_id']}'\
+                and users_id = '{data['author_id']}' \
+                and is_deleted = false;"
         self.cur.execute(sql)
         self.conn.commit()
         response = '"Ok 200", 200 '
