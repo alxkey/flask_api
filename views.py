@@ -7,7 +7,6 @@ from validation import SchemaAddArticle, SchemaUpdateArticle, SchemaAddLike, Sch
 
 
 class ArticleView(MethodView):
-
     def __init__(self):
         self.controller = ArticleController()
 
