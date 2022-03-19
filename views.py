@@ -6,6 +6,10 @@ from controller import ArticleController, LikeController, CommentController
 from validation import SchemaAddArticle, SchemaUpdateArticle, SchemaAddLike, SchemaAddComment
 
 
+class UserView(MethodView):
+    pass
+
+
 class ArticleView(MethodView):
     def __init__(self):
         self.controller = ArticleController()
