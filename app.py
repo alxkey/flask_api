@@ -4,6 +4,16 @@ from views import ArticleView, LikeView, CommentView
 
 app = Flask(__name__)
 
+api_user = UserView.as_view('user_view')
+app.add_url_rule('/users', defaults={'user_id': None, 'name': None}, view_func=api_user, methods=['GET', ])
+app.add_url_rule('/users/<user_id>', defaults={'name': None}, view_func=api_user, methods=['GET', ])
+app.add_url_rule('/users/name/<name>', defaults={'user_id': None}, view_func=api_user, methods=['GET', ])
+app.add_url_rule('/users/user',  view_func=api_user, methods=['POST', ])
+app.add_url_rule('/users/user',  view_func=api_user, methods=['PUT', ])
+app.add_url_rule('/users', defaults={'user_id': None, 'name': None}, view_func=api_user, methods=['DELETE', ])
+app.add_url_rule('/users/name/<name>', defaults={'user_id': None}, view_func=api_user, methods=['DELETE', ])
+app.add_url_rule('/users/<user_id>', defaults={'name': None}, view_func=api_user, methods=['DELETE', ])
+
 api_articles = ArticleView.as_view('article_view')
 app.add_url_rule('/articles', defaults={'article_id': None, 'name': None}, view_func=api_articles, methods=['GET', ])
 app.add_url_rule('/articles/<article_id>', defaults={'name': None}, view_func=api_articles, methods=['GET', ])
