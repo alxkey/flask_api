@@ -354,6 +354,7 @@ def main():
     string = db.post_like(2, 12)
     print(string)
 
+
 if __name__ == '__main__':
     main()
 

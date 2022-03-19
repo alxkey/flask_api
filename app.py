@@ -4,7 +4,6 @@ from views import ArticleView, LikeView, CommentView
 
 app = Flask(__name__)
 
-
 api_articles = ArticleView.as_view('article_view')
 app.add_url_rule('/articles', defaults={'article_id': None, 'name': None}, view_func=api_articles, methods=['GET', ])
 app.add_url_rule('/articles/<article_id>', defaults={'name': None}, view_func=api_articles, methods=['GET', ])
@@ -39,7 +38,6 @@ app.add_url_rule('/comments/name/<title>&<name>', defaults={'article_id': None, 
                  view_func=api_comment, methods=['DELETE', ])
 app.add_url_rule('/comments/<article_id>&<author_id>', defaults={'title': None, 'name': None}, view_func=api_comment,\
                  methods=['DELETE', ])
-
 
 if __name__ == '__main__':
     app.run()

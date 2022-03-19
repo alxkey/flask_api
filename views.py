@@ -36,7 +36,6 @@ class ArticleView(MethodView):
         result = self.controller.get_by_name(name)
         return result
 
-
     def post(self) -> dict or str:
         data = request.get_json()
         try:
@@ -86,7 +85,6 @@ class ArticleView(MethodView):
 
 
 class LikeView(MethodView):
-
     def __init__(self):
         self.controller = LikeController()
 
