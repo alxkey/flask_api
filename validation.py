@@ -1,5 +1,12 @@
 from marshmallow import Schema, fields, validate
 
+class SchemaAddUser(Schema):
+    nik_name = fields.Str(validate=validate.Length(min=4), required=True)
+    password = fields.Str(validate=validate.Length(min=6, max=20), required=True)
+    first_name = fields.Str(validate=validate.Length(min=2), required=True)
+    last_name = fields.Str(validate=validate.Length(min=2), required=True)
+    age = fields.Number(as_string=True, required=True)
+
 
 class SchemaAddArticle(Schema):
     name = fields.Str(validate=validate.Length(min=4), required=True)

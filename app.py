@@ -1,6 +1,6 @@
 from flask import Flask
 
-from views import ArticleView, LikeView, CommentView
+from views import ArticleView, LikeView, CommentView, UserView
 
 app = Flask(__name__)
 
