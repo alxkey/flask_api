@@ -1,5 +1,14 @@
+from flask import request
 from jwt import encode, decode
+
 from config import SECRET_KEY
+
+
+def token_extraction():
+    auth = request.headers.get('Authorization')
+    list_auth = auth.split()
+    token = list_auth[1]
+    return token
 
 
 class TokenGen:
