@@ -5,7 +5,7 @@ from config import SECRET_KEY
 
 
 def token_extraction():
-    auth = request.headers.get('Authorization')
+    auth = request.headers.get('Authorization')   #########################  try except
     list_auth = auth.split()
     token = list_auth[1]
     return token

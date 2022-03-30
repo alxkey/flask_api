@@ -107,9 +107,19 @@ class AuthModel():
         sql = f"SELECT user_id FROM tokens WHERE token = '{token}'"
         try:
             self.cur.execute(sql)
-            id = self.cur.fetchone()
-            return id
-        except psycopg2.Error:
+            user_id = self.cur.fetchone()
+            return user_id
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
             return None
 
     def __del__(self):
@@ -126,15 +136,23 @@ class UserModels(AbstractModels):
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-        except psycopg2.Error:
-            return None
-        else:
             response = []
             for value in values:
                 result = dict(zip(keys, value))
                 response.append(result)
-            #logger
             return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
     def get_by_id(self, user_id: str) -> dict or None:
         keys = ('nick_name', 'first_name', 'last_name','age')
@@ -145,12 +163,21 @@ class UserModels(AbstractModels):
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-        except psycopg2.Error:
-            return None
-        else:
             values = values[0]
             response = dict(zip(keys, values))
             return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
     def get_by_name(self, name: str) -> dict or None:
         keys = ('nick_name', 'first_name', 'last_name','age')
@@ -161,33 +188,43 @@ class UserModels(AbstractModels):
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-        except psycopg2.Error:
-            return None
-        else:
             values = values[0]
             response = dict(zip(keys, values))
             return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
     def create(self, data: dict) -> dict or None:
         tg = TokenGen()
-
         try:
             sql = f"SELECT max(id) FROM users;"
             self.cur.execute(sql)
             user_id = self.cur.fetchone()
+            user_id = user_id[0] + 1
             token = tg.generate(user_id)
             sql = f"BEGIN; \
-                  INSERT INTO users(name, password, first_name, last_name, age)\
-                           VALUES('{data['nick_name']}', '{data['password']}', '{data['first_name']}',\
+                  INSERT INTO users(id, name, password, first_name, last_name, age)\
+                           VALUES('{user_id}', '{data['nick_name']}', '{data['password']}', '{data['first_name']}',\
                            '{data['last_name']}', '{data['age']}');\
                   INSERT INTO tokens (user_id, token) VALUES ({user_id}, '{token}');\
                   COMMIT;"
             self.cur.execute(sql)
             result = {'user_id': user_id, 'token': token}
             return result
-        except(Exception, psycopg2.DatabaseError) as error:
-            result = None
-            return result
+        except psycopg2.DatabaseError as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
     def update(self, data: dict) -> bool or None:
         keys = ('name', 'text', 'date')
@@ -206,7 +243,17 @@ class UserModels(AbstractModels):
                     AND is_deleted = false;"
             self.cur.execute(sql)
             return True
-        except psycopg2.Error:
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
             return None
 
     def delete(self) -> bool or None:
@@ -214,7 +261,17 @@ class UserModels(AbstractModels):
         try:
             self.cur.execute(sql)
             return True
-        except psycopg2.Error:
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
             return None
 
     def delete_by_id(self, user_id: str) -> bool or None:
@@ -224,7 +281,17 @@ class UserModels(AbstractModels):
         try:
             self.cur.execute(sql)
             return True
-        except psycopg2.Error:
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
             return None
 
     def delete_by_name(self, name: str) -> bool or None:
@@ -234,106 +301,211 @@ class UserModels(AbstractModels):
         try:
             self.cur.execute(sql)
             return True
-        except psycopg2.Error:
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
             return None
 
 
 class ArticleModels(AbstractModels):
-    def get(self):
+    def get(self) -> list or None:
         keys = ('title', 'date', 'author_id')
         sql = 'SELECT name, pub_date, users_id\
                FROM articles\
                where is_deleted = false;'
-        self.cur.execute(sql)
-        values = self.cur.fetchall()
-        response = []
-        for value in values:
-            result = dict(zip(keys, value))
-            response.append(result)
-        return response
+        try:
+            self.cur.execute(sql)
+            values = self.cur.fetchall()
+            response = []
+            for value in values:
+                result = dict(zip(keys, value))
+                response.append(result)
+            return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def get_by_id(self, article_id: str) -> dict:
+    def get_by_id(self, article_id: str) -> dict or None:
         keys = ('title', 'text', 'date', 'author_id')
         sql = f'SELECT name, article_text, pub_date, users_id\
                 FROM articles\
                 WHERE id = {article_id}\
                 AND is_deleted = false;'
-        self.cur.execute(sql)
-        values = self.cur.fetchall()
-        values = values[0]
-        response = dict(zip(keys, values))
-        return response
+        try:
+            self.cur.execute(sql)
+            values = self.cur.fetchall()
+            values = values[0]
+            response = dict(zip(keys, values))
+            return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def get_by_name(self, name: str) -> dict:
+    def get_by_name(self, name: str) -> dict or None:
         keys = ('title', 'text', 'date', 'author_id')
         sql = f'SELECT name, article_text, pub_date, users_id\
                 FROM articles\
                 WHERE name = {name} \
                 AND is_deleted = false;'
-        self.cur.execute(sql)
-        values = self.cur.fetchall()
-        values = values[0]
-        response = dict(zip(keys, values))
-        return response
+        try:
+            self.cur.execute(sql)
+            values = self.cur.fetchall()
+            values = values[0]
+            response = dict(zip(keys, values))
+            return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def create(self, new_article: dict) -> dict:
+    def create(self, new_article: dict) -> dict or None:
         sql = f"INSERT INTO articles(name, article_text, pub_date, users_id)\
                 VALUES('{new_article['name']}', '{new_article['text']}', '{new_article['date']}',\
                 '{new_article['author_id']}')\
                 RETURNING id;"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        values = self.cur.fetchone()
-        response = {'article_id': values[0]}
-        return response
+        try:
+            self.cur.execute(sql)
+            values = self.cur.fetchone()
+            response = {'article_id': values[0]}
+            return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def update(self, data: dict) -> str:
+    def update(self, data: dict) -> bool or None:
         keys = ('name', 'text', 'date')
         sql = f"SELECT name, article_text, pub_date FROM articles\
                 WHERE id = '{data['id']}';"
-        self.cur.execute(sql)
-        values = self.cur.fetchall()
-        values=values[0]
-        dict_from_db = dict(zip(keys, values))
-        dict_for_db = {**dict_from_db, **data}
-        sql = f"UPDATE articles SET name = '{dict_for_db.get('name')}',\
-                article_text = '{dict_for_db.get('text')}',\
-                pub_date = '{dict_for_db.get('date')}'\
-                WHERE id = '{data['id']}' \
-                AND is_deleted = false;"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200 '
-        return response
+        try:
+            self.cur.execute(sql)
+            values = self.cur.fetchall()
+            values=values[0]
+            dict_from_db = dict(zip(keys, values))
+            dict_for_db = {**dict_from_db, **data}
+            sql = f"UPDATE articles SET name = '{dict_for_db.get('name')}',\
+                    article_text = '{dict_for_db.get('text')}',\
+                    pub_date = '{dict_for_db.get('date')}'\
+                    WHERE id = '{data['id']}' \
+                    AND is_deleted = false;"
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def delete(self) -> str:
+    def delete(self) -> bool or None:
         sql = "UPDATE articles SET is_deleted = true;"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200 '
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def delete_by_id(self, article_id: str) -> str:
+    def delete_by_id(self, article_id: str) -> bool or None:
         sql = f"UPDATE articles\
                 SET is_deleted = true\
                 WHERE id = {article_id};"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200 '
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def delete_by_name(self, name: str) -> str:
+    def delete_by_name(self, name: str) -> bool or None:
         sql = f"UPDATE articles\
               SET is_deleted = true\
               WHERE name = {name};"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = make_response("Ok 200", 200)      #########################################
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
 
 class LikeModels(AbstractModels):
-    def get(self) -> list:
+    def get(self) -> list or None:
         sql = "select name, count(article_like.users_id)\
               from articles\
               inner join article_like\
@@ -342,11 +514,24 @@ class LikeModels(AbstractModels):
               and articles.is_deleted = false\
               group by name\
               order by count desc;"
-        self.cur.execute(sql)
-        response = self.cur.fetchall()
-        return response
+        try:
+            self.cur.execute(sql)
+            response = self.cur.fetchall()
+            return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def get_by_id(self, article_id: str) -> dict:
+    def get_by_id(self, article_id: str) -> list or None:
         sql = f'select articles.name, users.name\
                 from articles\
                 inner join article_like\
@@ -356,11 +541,24 @@ class LikeModels(AbstractModels):
                 where articles.id = {article_id}\
                 and articles.is_deleted = false\
                 and article_like.is_deleted = false;'
-        self.cur.execute(sql)
-        response = self.cur.fetchall()
-        return response
+        try:
+            self.cur.execute(sql)
+            response = self.cur.fetchall()
+            return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def get_by_name(self, name: str) -> dict:
+    def get_by_name(self, name: str) -> list or None:
         sql = f"select articles.name, users.name\
                 from articles\
                 inner join article_like\
@@ -370,46 +568,106 @@ class LikeModels(AbstractModels):
                 where articles.name = '{name}'\
                 and article_like.is_deleted = false\
                 and articles.is_deleted = false;"
-        self.cur.execute(sql)
-        response = self.cur.fetchall()
-        return response
+        try:
+            self.cur.execute(sql)
+            response = self.cur.fetchall()
+            return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def create(self, data: dict) -> dict:
+    def create(self, data: dict) -> bool or None:
         sql = f"insert into article_like(articles_id, users_id)\
                 values('{data['article_id']}','{data['author_id']}');"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200 '
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def delete(self) -> str:
+    def update(self, data: dict) :
+        pass
+
+    def delete(self) -> bool or None:
         sql = "UPDATE article_like SET is_deleted = true;"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200 '
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def delete_by_id(self, article_id: str, author_id: str) -> str:
+    def delete_by_id(self, article_id: str, author_id: str) -> bool or None:
         sql = f"update article_like set is_deleted = true where articles_id = {article_id}\
                 and users_id = {author_id};"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200 '
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def delete_by_name(self, title: str, name: str) -> str:
+    def delete_by_name(self, title: str, name: str) -> bool or None:
         sql = f"update article_like set is_deleted = true where articles_id in\
                 (select id from articles where name = '{title}')\
                 and users_id in\
                 (select id from users where name ='{name}');"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200'
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
 
 class CommentModels(AbstractModels):
-    def get(self) -> list:
+    def get(self) -> list or None:
         sql = "select articles.name, users.name, comments.comment_text\
                from articles\
                inner join comments\
@@ -418,11 +676,24 @@ class CommentModels(AbstractModels):
                on comments.users_id = users.id\
                and articles.is_deleted = false\
                and comments.is_deleted = false;"
-        self.cur.execute(sql)
-        response = self.cur.fetchall()
-        return response
+        try:
+            self.cur.execute(sql)
+            response = self.cur.fetchall()
+            return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def get_by_id(self, article_id: str) -> dict:
+    def get_by_id(self, article_id: str) -> list or None:
         sql = f'select articles.name, users.name, comments.comment_text\
                 from articles\
                 inner join comments\
@@ -432,66 +703,147 @@ class CommentModels(AbstractModels):
                 where articles.id = {article_id}\
                 and articles.is_deleted = false\
                 and comments.is_deleted = false;'
-        self.cur.execute(sql)
-        response = self.cur.fetchall()
-        return response
+        try:
+            self.cur.execute(sql)
+            response = self.cur.fetchall()
+            return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def get_by_name(self, name: str) -> dict:
+    def get_by_name(self, name: str) -> list or None:
         sql = f"select articles.name, users.name, comments.comment_text\
                 from articles\
                 inner join comments\
                 on comments.articles_id = articles.id\
                 inner join users\
                 on comments.users_id = users.id\
-                where articles.id =15\
+                where articles.name ='{name}'\
                 and articles.is_deleted = false\
                 and comments.is_deleted = false;"
-        self.cur.execute(sql)
-        response = self.cur.fetchall()
-        return response
+        try:
+            self.cur.execute(sql)
+            response = self.cur.fetchall()
+            return response
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def create(self, data: dict) -> dict:
+    def create(self, data: dict) -> bool or None:
         sql = f"insert into comments(aricles_id, users_id, comment_text)\
                 values('{data['article_id']}', '{data['user_id']}', '{data['comment']}');"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200 '
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def update(self, data: dict) -> dict:
+    def update(self, data: dict) -> bool or None:
         sql = f"update comments set comment_text = '{data['comment']}'\
                 where articles_id = '{data['article_id']}'\
                 and users_id = '{data['author_id']}' \
                 and is_deleted = false;"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200 '
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def delete(self) -> str:
+    def delete(self) -> bool or None:
         sql = "UPDATE comments SET is_deleted = true;"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200 '
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def delete_by_id(self, article_id: str, author_id: str) -> str:
+    def delete_by_id(self, article_id: str, author_id: str) -> bool or None:
         sql = f"update comments set is_deleted = true where articles_id = {article_id}\
                 and users_id = {author_id};"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200 '
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
-    def delete_by_name(self, title: str, name: str) -> str:
+    def delete_by_name(self, title: str, name: str) -> bool or None:
         sql = f"update comments set is_deleted = true where articles_id in\
                 (select id from articles where name = '{title}')\
                 and users_id in\
                 (select id from users where name ='{name}');"
-        self.cur.execute(sql)
-#        self.conn.commit()
-        response = '"Ok 200", 200'
-        return response
+        try:
+            self.cur.execute(sql)
+            return True
+        except psycopg2.OperationalError as err:
+            error = ("Операционная ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.InternalError as err:
+            error = ("Внутренняя ошибка БД", err)
+            print(error)
+            return None
+        except psycopg2.Error as err:
+            error = ("Ошибка БД", err)
+            print(error)
+            return None
 
 
 def main():

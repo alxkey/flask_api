@@ -17,47 +17,71 @@ class UserController:
         self.models = UserModels()
 
     def get(self):
-        all_users = self.models.get()
-        serializer = jsonify(all_users)
-        return serializer
+        result = self.models.get()
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            serializer = jsonify(result)
+            response = (serializer, 200)
+        return response
 
     def get_by_id(self, user_id: str):
-        user = self.models.get_by_id(user_id)
-        serializer = jsonify(user)
-        return serializer
+        result = self.models.get_by_id(user_id)
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            serializer = jsonify(result)
+            response = (serializer, 200)
+        return response
 
     def get_by_name(self, name: str):
-        user = self.models.get_by_name(name)
-        serializer = jsonify(user)
-        return serializer
+        result = self.models.get_by_name(name)
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            serializer = jsonify(result)
+            response = (serializer, 200)
+        return response
 
     def post(self, new_user: dict):
         result = self.models.create(new_user)
-        if result:
-            serializer = jsonify(result)
-            return serializer
+        if result is None:
+            response = ("Ошибка сервера", 500)
         else:
-            result = "Ошибка сервера"
-            return result
+            serializer = jsonify(result)
+            response = (serializer, 200)
+        return response
 
     def put(self, update_user: dict):
         result = self.models.update(update_user)
-        if result:
-            result = "Все ок"
+        if result is None:
+            response = ("Ошибка сервера", 500)
         else:
-            result = "Ошибка сервера"
-        return result
+            response = ("Все Ok", 200)
+        return response
 
     def delete(self):
-        response = self.models.delete()
+        result = self.models.delete()
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            response = ("Все Ok", 200)
         return response
 
     def delete_by_name(self, name: str):
-        response = self.models.delete_by_name(name)
+        result = self.models.delete_by_name(name)
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            response = ("Все Ok", 200)
         return response
 
     def delete_by_id(self, user_id: str):
-        response = self.models.delete_by_id(user_id)
+        result = self.models.delete_by_id(user_id)
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            response = ("Все Ok", 200)
         return response
 
 
@@ -66,40 +90,71 @@ class ArticleController:
          self.models = ArticleModels()
 
      def get(self):
-         all_articles = self.models.get()
-         serializer = jsonify(all_articles)
-         return serializer
+         result = self.models.get()
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             serializer = jsonify(result)
+             response = (serializer, 200)
+         return response
 
      def get_by_id(self, article_id: str):
-         article = self.models.get_by_id(article_id)
-         serializer = jsonify(article)
-         return serializer
+         result = self.models.get_by_id(article_id)
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             serializer = jsonify(result)
+             response = (serializer, 200)
+         return response
 
      def get_by_name(self, name: str):
-         article = self.models.get_by_name(name)
-         serializer = jsonify(article)
-         return serializer
+         result = self.models.get_by_name(name)
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             serializer = jsonify(result)
+             response = (serializer, 200)
+         return response
 
      def post(self, new_article: dict):
-         article_id = self.models.create(new_article)
-         serializer = jsonify(article_id)
-         return serializer
+         result = self.models.create(new_article)
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             serializer = jsonify(result)
+             response = (serializer, 200)
+         return response
 
      def put(self, update_article: dict):
-         article_id = self.models.update(update_article)
-         serializer = jsonify(article_id)
-         return serializer
+         result = self.models.update(update_article)
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             response = ("Все Ok", 200)
+         return response
 
      def delete(self):
-         response = self.models.delete()
+         result = self.models.delete()
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             response = ("Все Ok", 200)
          return response
 
      def delete_by_name(self, name: str):
-         response = self.models.delete_by_name(name)
+         result = self.models.delete_by_name(name)
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             response = ("Все Ok", 200)
          return response
 
      def delete_by_id(self, article_id: str):
-         response = self.models.delete_by_id(article_id)
+         result = self.models.delete_by_id(article_id)
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             response = ("Все Ok", 200)
          return response
 
 
@@ -108,34 +163,62 @@ class LikeController:
          self.models = LikeModels()
 
      def get(self):
-         all_articles = self.models.get()
-         serializer = jsonify(all_articles)
-         return serializer
+         result = self.models.get()
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             serializer = jsonify(result)
+             response = (serializer, 200)
+         return response
 
      def get_by_id(self, article_id: str):
-         article = self.models.get_by_id(article_id)
-         serializer = jsonify(article)
-         return serializer
+         result = self.models.get_by_id(article_id)
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             serializer = jsonify(result)
+             response = (serializer, 200)
+         return response
 
      def get_by_name(self, name: str):
-         article = self.models.get_by_name(name)
-         serializer = jsonify(article)
-         return serializer
+         result = self.models.get_by_name(name)
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             serializer = jsonify(result)
+             response = (serializer, 200)
+         return response
 
      def post(self, data: dict):
-         response = self.models.create(data)
+         result = self.models.create(data)
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             response = ("Все Ok", 200)
          return response
 
      def delete(self):
-         response = self.models.delete()
+         result = self.models.delete()
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             response = ("Все Ok", 200)
          return response
 
      def delete_by_name(self, title: str, name: str):
-         response = self.models.delete_by_name(title, name)
+         result = self.models.delete_by_name(title, name)
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             response = ("Все Ok", 200)
          return response
 
      def delete_by_id(self, article_id: str, author_id: str):
-         response = self.models.delete_by_id(article_id, author_id)
+         result = self.models.delete_by_id(article_id, author_id)
+         if result is None:
+             response = ("Ошибка сервера", 500)
+         else:
+             response = ("Все Ok", 200)
          return response
 
 
@@ -144,40 +227,70 @@ class CommentController:
         self.models = CommentModels()
 
     def get(self):
-        all_articles = self.models.get()
-        serializer = jsonify(all_articles)
-        return serializer
+        result = self.models.get()
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            serializer = jsonify(result)
+            response = (serializer, 200)
+        return response
 
     def get_by_id(self, article_id: str):
-        article = self.models.get_by_id(article_id)
-        serializer = jsonify(article)
-        return serializer
+        result = self.models.get_by_id(article_id)
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            serializer = jsonify(result)
+            response = (serializer, 200)
+        return response
 
     def get_by_name(self, name: str):
-        article = self.models.get_by_name(name)
-        serializer = jsonify(article)
-        return serializer
+        result = self.models.get_by_name(name)
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            serializer = jsonify(result)
+            response = (serializer, 200)
+        return response
 
     def post(self, data: dict):
-        article_id = self.models.create(data)
-        serializer = jsonify(article_id)
-        return serializer
+        result = self.models.create(data)
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            response = ("Все Ok", 200)
+        return response
 
     def put(self, data: dict):
-        article_id = self.models.update(data)
-        serializer = jsonify(article_id)
-        return serializer
+        result = self.models.update(data)
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            response = ("Все Ok", 200)
+        return response
 
     def delete(self):
-        response = self.models.delete()
+        result = self.models.delete()
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            response = ("Все Ok", 200)
         return response
 
     def delete_by_name(self, title: str, name: str):
-        response = self.models.delete_by_name(title, name)
+        result = self.models.delete_by_name(title, name)
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            response = ("Все Ok", 200)
         return response
 
     def delete_by_id(self, article_id: str, author_id: str):
-        response = self.models.delete_by_id(article_id, author_id)
+        result = self.models.delete_by_id(article_id, author_id)
+        if result is None:
+            response = ("Ошибка сервера", 500)
+        else:
+            response = ("Все Ok", 200)
         return response
 
 
