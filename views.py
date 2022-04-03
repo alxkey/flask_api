@@ -3,10 +3,10 @@ from flask.views import MethodView
 from marshmallow import ValidationError
 from flask import make_response
 
-from controller import ArticleController, LikeController, CommentController, UserController , AuthController
+from controller import ArticleController, LikeController, CommentController, UserController, AuthController
 from validation import SchemaAddArticle, SchemaUpdateArticle, SchemaAddLike, SchemaAddComment, SchemaAddUser
 from tokens import token_extraction
-
+from logger import logger
 
 class UserView(MethodView):
     def __init__(self):
@@ -15,7 +15,7 @@ class UserView(MethodView):
 
     def get(self, user_id: str, name: str) -> dict or str:
         token = token_extraction()
-        print(token)
+        logger.info(token)
         authorized = self.auth.authorization(token)
         if authorized:
             if user_id is None and name is None:
@@ -56,7 +56,7 @@ class UserView(MethodView):
     def post(self) -> dict or str:
         data = request.get_json()
         try:
-            SchemaAddUser().load(data)
+            SchemaAddUser().load(data)          ######## возвращается ошибка из validation.py
         except ValidationError as err:
             result = (err, 400)
             response = make_response(result)
