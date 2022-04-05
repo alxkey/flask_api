@@ -1,6 +1,7 @@
 from flask import jsonify
 
 from models import UserModels, ArticleModels, LikeModels, CommentModels, AuthModel
+from dataclass import User
 
 
 class AuthController:
@@ -43,22 +44,34 @@ class UserController:
             response = (serializer, 200)
         return response
 
-    def post(self, new_user: dict):
-        result = self.models.create(new_user)
+    def post(self, user: dict):
+        print(user)
+        data = self.__to_dataclass(user)
+        result = self.models.create(data)
+        print(result)
+        print(type(result))
         if result is None:
             response = ("Ошибка сервера", 500)
         else:
             serializer = jsonify(result)
+            print(serializer)
+            print(type(serializer))
             response = (serializer, 200)
         return response
 
     def put(self, update_user: dict):
-        result = self.models.update(update_user)
+        data = self.__to_dataclass(update_user)
+        result = self.models.update(data)
         if result is None:
             response = ("Ошибка сервера", 500)
         else:
             response = ("Все Ok", 200)
         return response
+
+    def __to_dataclass(self, data: dict) -> User:
+        user = User(name=data['name'], password=data['password'], first_name=data['first_name'],\
+                    last_name=data['last_name'], age=data['age'])
+        return user
 
     def delete(self):
         result = self.models.delete()

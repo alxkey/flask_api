@@ -1,12 +1,14 @@
+from flask import make_response
 from flask import request
 from flask.views import MethodView
 from marshmallow import ValidationError
-from flask import make_response
 
 from controller import ArticleController, LikeController, CommentController, UserController, AuthController
-from validation import SchemaAddArticle, SchemaUpdateArticle, SchemaAddLike, SchemaAddComment, SchemaAddUser
-from tokens import token_extraction
 from logger import logger
+from tokens import token_extraction
+from validation import SchemaAddArticle, SchemaUpdateArticle, SchemaAddLike, SchemaAddComment, SchemaAddUser, \
+    SchemaUpdateUser
+
 
 class UserView(MethodView):
     def __init__(self):
@@ -55,8 +57,9 @@ class UserView(MethodView):
 
     def post(self) -> dict or str:
         data = request.get_json()
+        logger.info(f"DATA: {data}")
         try:
-            SchemaAddUser().load(data)          ######## возвращается ошибка из validation.py
+            SchemaAddUser().load(data)
         except ValidationError as err:
             result = (err, 400)
             response = make_response(result)
@@ -71,7 +74,7 @@ class UserView(MethodView):
         if authorized:
             data = request.get_json()
             try:
-                SchemaUpdateArticle().load(data)
+                SchemaUpdateUser().load(data)
             except ValidationError as err:
                 result = (err, 400)
                 response = make_response(result)
@@ -83,7 +86,6 @@ class UserView(MethodView):
             result = ("Ошибка авторизации", 401)
             response = make_response(result)
             return response
-
 
     def delete(self, user_id: str, name: str) -> dict or str:
         token = token_extraction()

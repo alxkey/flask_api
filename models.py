@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 
 import psycopg2
-from flask import make_response
 
 from config import DB_NAME, USER, PASSWORD, HOST, PORT
+from dataclass import UserResult
 from tokens import TokenGen
 
 
@@ -45,7 +45,7 @@ class AbstractModels(ABC):
         pass
 
     @abstractmethod
-    def create(self, data: dict):
+    def create(self, data):
         '''
         resource creation
         :param data: resource parameter dic
@@ -54,7 +54,7 @@ class AbstractModels(ABC):
         pass
 
     @abstractmethod
-    def update(self, data: dict):
+    def update(self, data):
         '''
         resource updating
         :param data: resource parameter dic
@@ -180,8 +180,8 @@ class UserModels(AbstractModels):
             return None
 
     def get_by_name(self, name: str) -> dict or None:
-        keys = ('nick_name', 'first_name', 'last_name','age')
-        sql = f'SELECT  name, first_name, last_name, age\
+        keys = ('nick_name', 'first_name', 'last_name', 'age')
+        sql = f'SELECT name, first_name, last_name, age\
                 FROM users\
                 WHERE name = {name} \
                 AND is_deleted = false;'
@@ -204,7 +204,7 @@ class UserModels(AbstractModels):
             print(error)
             return None
 
-    def create(self, data: dict) -> dict or None:
+    def create(self, data: USER) -> UserResult or None:
         tg = TokenGen()
         try:
             sql = f"SELECT max(id) FROM users;"
@@ -214,32 +214,37 @@ class UserModels(AbstractModels):
             token = tg.generate(user_id)
             sql = f"BEGIN; \
                   INSERT INTO users(id, name, password, first_name, last_name, age)\
-                           VALUES('{user_id}', '{data['nick_name']}', '{data['password']}', '{data['first_name']}',\
-                           '{data['last_name']}', '{data['age']}');\
+                           VALUES('{user_id}', '{data.name}', '{data.password}', '{data.first_name}',\
+                           '{data.last_name}', '{data.age}');\
                   INSERT INTO tokens (user_id, token) VALUES ({user_id}, '{token}');\
                   COMMIT;"
             self.cur.execute(sql)
-            result = {'user_id': user_id, 'token': token}
+            result = UserResult(user_id=user_id, token=token)
             return result
         except psycopg2.DatabaseError as err:
             error = ("Ошибка БД", err)
             print(error)
             return None
 
-    def update(self, data: dict) -> bool or None:
-        keys = ('name', 'text', 'date')
-        sql = f"SELECT name, article_text, pub_date FROM articles\
-                WHERE id = '{data['id']}';"
+    def update(self, data: USER) -> bool or None:
+        dict_data = {"name": data.name, "password": data.password, "first_name": data.first_name, \
+                     "last_name": data.last_name, "age": data.age}
+        keys = ('name', 'password', 'first_name', 'last_name', 'age')
+        sql = f"SELECT name, password  FROM users\
+                WHERE first_name = '{data.first_name}'\
+                AND last_name = '{data.last_name}' \
+                AND  age = '{data.age}';"
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
             values = values[0]
             dict_from_db = dict(zip(keys, values))
-            dict_for_db = {**dict_from_db, **data}
-            sql = f"UPDATE articles SET name = '{dict_for_db.get('name')}',\
-                    article_text = '{dict_for_db.get('text')}',\
-                    pub_date = '{dict_for_db.get('date')}'\
-                    WHERE id = '{data['id']}' \
+            dict_for_db = {**dict_from_db, **dict_data}
+            sql = f"UPDATE users SET name = '{dict_for_db.get('name')}',\
+                    password = '{dict_for_db.get('password')}'\
+                    WHERE first_name = '{data.first_name}'\
+                    AND last_name = '{data.last_name}' \
+                    AND  age = '{data.age}' \
                     AND is_deleted = false;"
             self.cur.execute(sql)
             return True
