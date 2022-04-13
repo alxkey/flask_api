@@ -1,7 +1,7 @@
 from flask import jsonify
 
 from models import UserModels, ArticleModels, LikeModels, CommentModels, AuthModel
-from dataclass import User
+from dataclass import User, Article, ArticleUpdate, Like, LikeGetById, CommentCreate, CommentById, CommentByName
 
 
 class AuthController:
@@ -69,7 +69,7 @@ class UserController:
         return response
 
     def __to_dataclass(self, data: dict) -> User:
-        user = User(name=data['name'], password=data['password'], first_name=data['first_name'],\
+        user = User(name=data['name'], password=data['password'], first_name=data['first_name'],
                     last_name=data['last_name'], age=data['age'])
         return user
 
@@ -130,7 +130,8 @@ class ArticleController:
          return response
 
      def post(self, new_article: dict):
-         result = self.models.create(new_article)
+         data = self. __to_dataclass(new_article)
+         result = self.models.create(data)
          if result is None:
              response = ("Ошибка сервера", 500)
          else:
@@ -139,12 +140,21 @@ class ArticleController:
          return response
 
      def put(self, update_article: dict):
-         result = self.models.update(update_article)
+         data = self.__to_update_dataclass(update_article)
+         result = self.models.update(data)
          if result is None:
              response = ("Ошибка сервера", 500)
          else:
              response = ("Все Ok", 200)
          return response
+
+     def __to_dataclass(self, data: dict) -> Article:
+         article = Article(name=data['name'], text=data['text'], date=data['date'], user_id=data['author_id'])
+         return article
+
+     def __to_update_dataclass(self, data: dict) -> ArticleUpdate:
+         article = ArticleUpdate(article_id=data['article_id'], name=data['name'], text=data['text'], date=data['date'])
+         return article
 
      def delete(self):
          result = self.models.delete()
@@ -202,13 +212,18 @@ class LikeController:
              response = (serializer, 200)
          return response
 
-     def post(self, data: dict):
+     def post(self, new_like: dict):
+         data = self.__to_dataclass(new_like)
          result = self.models.create(data)
          if result is None:
              response = ("Ошибка сервера", 500)
          else:
              response = ("Все Ok", 200)
          return response
+
+     def __to_dataclass(self, data: dict) -> Like:
+         like = Like(article_id=data['article_id'], user_id=data['user_id'])
+         return like
 
      def delete(self):
          result = self.models.delete()
@@ -219,15 +234,17 @@ class LikeController:
          return response
 
      def delete_by_name(self, title: str, name: str):
-         result = self.models.delete_by_name(title, name)
+         data = LikeGetById(article_name=title, user_name=name)
+         result = self.models.delete_by_name(data)
          if result is None:
              response = ("Ошибка сервера", 500)
          else:
              response = ("Все Ok", 200)
          return response
 
-     def delete_by_id(self, article_id: str, author_id: str):
-         result = self.models.delete_by_id(article_id, author_id)
+     def delete_by_id(self, article_id: int, user_id: int):
+         data = Like(article_id=article_id, user_id=user_id)
+         result = self.models.delete_by_id(data)
          if result is None:
              response = ("Ошибка сервера", 500)
          else:
@@ -267,7 +284,8 @@ class CommentController:
         return response
 
     def post(self, data: dict):
-        result = self.models.create(data)
+        comment = self.__to_dataclass(data)
+        result = self.models.create(comment)
         if result is None:
             response = ("Ошибка сервера", 500)
         else:
@@ -275,12 +293,25 @@ class CommentController:
         return response
 
     def put(self, data: dict):
-        result = self.models.update(data)
+        comment = self.__to_dataclass(data)
+        result = self.models.update(comment)
         if result is None:
             response = ("Ошибка сервера", 500)
         else:
             response = ("Все Ok", 200)
         return response
+
+    def __to_dataclass(self, data: dict) -> CommentCreate: # bad naming
+        comment = CommentCreate(article_id=data['article_id'], user_id=data['user_id'], comment=data['comment'])
+        return comment
+
+    def __to_dataclass_id(self, article_id, author_id) -> CommentById:
+        comment_by_id = CommentById(article_id=article_id, user_id=author_id)
+        return comment_by_id
+
+    def __to_dataclass_name(self, title, name) -> CommentByName:
+        comment_by_name = CommentByName(article_name=title, user_name=name)
+        return comment_by_name
 
     def delete(self):
         result = self.models.delete()
@@ -291,7 +322,8 @@ class CommentController:
         return response
 
     def delete_by_name(self, title: str, name: str):
-        result = self.models.delete_by_name(title, name)
+        comment = self.__to_dataclass_name(title, name)
+        result = self.models.delete_by_name(comment)
         if result is None:
             response = ("Ошибка сервера", 500)
         else:
@@ -299,7 +331,8 @@ class CommentController:
         return response
 
     def delete_by_id(self, article_id: str, author_id: str):
-        result = self.models.delete_by_id(article_id, author_id)
+        comment = self.__to_dataclass_id(article_id, author_id)
+        result = self.models.delete_by_id(comment)
         if result is None:
             response = ("Ошибка сервера", 500)
         else:

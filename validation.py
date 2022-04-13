@@ -32,12 +32,12 @@ class SchemaUpdateArticle(Schema):
 
 class SchemaAddLike(Schema):
     article_id = fields.Number(as_string=True, required=True)
-    author_id = fields.Number(as_string=True, required=True)
+    user_id = fields.Number(as_string=True, required=True)
 
 
 class SchemaAddComment(Schema):
     article_id = fields.Number(as_string=True, required=True)
-    author_id = fields.Number(as_string=True, required=True)
+    user_id = fields.Number(as_string=True, required=True)
     comment = fields.Str(validate=validate.Length(min=4), required=True)
 
 

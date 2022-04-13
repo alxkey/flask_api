@@ -2,8 +2,9 @@ from abc import ABC, abstractmethod
 
 import psycopg2
 
+import dataclass
 from config import DB_NAME, USER, PASSWORD, HOST, PORT
-from dataclass import UserResult
+from dataclass import UserResult, UserGet, ArticleResult, Article, LikeGet, LikeGetById, Comment
 from tokens import TokenGen
 
 
@@ -129,18 +130,14 @@ class AuthModel():
 
 class UserModels(AbstractModels):
     def get(self) -> list or None:
-        keys = ('nick_name', 'first_name', 'last_name','age')
         sql = 'SELECT name, first_name, last_name, age\
                FROM users\
                where is_deleted = false;'
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-            response = []
-            for value in values:
-                result = dict(zip(keys, value))
-                response.append(result)
-            return response
+            result = [UserGet(name=val[0], first_name=val[1], last_name=val[2], age=val[3]) for val in values]
+            return result
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -155,17 +152,18 @@ class UserModels(AbstractModels):
             return None
 
     def get_by_id(self, user_id: str) -> dict or None:
-        keys = ('nick_name', 'first_name', 'last_name','age')
         sql = f'SELECT  name, first_name, last_name, age\
                 FROM users\
                 WHERE id = {user_id}\
                 AND is_deleted = false;'
         try:
             self.cur.execute(sql)
-            values = self.cur.fetchall()
-            values = values[0]
-            response = dict(zip(keys, values))
-            return response
+            val = self.cur.fetchone()
+            if val is not None:
+                result = UserGet(name=val[0], first_name=val[1], last_name=val[2], age=val[3])
+                return result
+            else:
+                return None
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -180,17 +178,18 @@ class UserModels(AbstractModels):
             return None
 
     def get_by_name(self, name: str) -> dict or None:
-        keys = ('nick_name', 'first_name', 'last_name', 'age')
         sql = f'SELECT name, first_name, last_name, age\
                 FROM users\
                 WHERE name = {name} \
                 AND is_deleted = false;'
         try:
             self.cur.execute(sql)
-            values = self.cur.fetchall()
-            values = values[0]
-            response = dict(zip(keys, values))
-            return response
+            val = self.cur.fetchone()
+            if val is not None:
+                result = UserGet(name=val[0], first_name=val[1], last_name=val[2], age=val[3])
+                return result
+            else:
+                return None
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -204,7 +203,7 @@ class UserModels(AbstractModels):
             print(error)
             return None
 
-    def create(self, data: USER) -> UserResult or None:
+    def create(self, data) -> UserResult or None:
         tg = TokenGen()
         try:
             sql = f"SELECT max(id) FROM users;"
@@ -226,7 +225,7 @@ class UserModels(AbstractModels):
             print(error)
             return None
 
-    def update(self, data: USER) -> bool or None:
+    def update(self, data) -> bool or None:
         dict_data = {"name": data.name, "password": data.password, "first_name": data.first_name, \
                      "last_name": data.last_name, "age": data.age}
         keys = ('name', 'password', 'first_name', 'last_name', 'age')
@@ -322,18 +321,14 @@ class UserModels(AbstractModels):
 
 class ArticleModels(AbstractModels):
     def get(self) -> list or None:
-        keys = ('title', 'date', 'author_id')
-        sql = 'SELECT name, pub_date, users_id\
+        sql = 'SELECT name, article_text, pub_date, users_id\
                FROM articles\
                where is_deleted = false;'
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-            response = []
-            for value in values:
-                result = dict(zip(keys, value))
-                response.append(result)
-            return response
+            result = [Article(name=val[0], text=val[1], date=val[2], user_id=val[3]) for val in values]
+            return result
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -348,17 +343,18 @@ class ArticleModels(AbstractModels):
             return None
 
     def get_by_id(self, article_id: str) -> dict or None:
-        keys = ('title', 'text', 'date', 'author_id')
         sql = f'SELECT name, article_text, pub_date, users_id\
                 FROM articles\
                 WHERE id = {article_id}\
                 AND is_deleted = false;'
         try:
             self.cur.execute(sql)
-            values = self.cur.fetchall()
-            values = values[0]
-            response = dict(zip(keys, values))
-            return response
+            val = self.cur.fetchone()
+            if val is not None:
+                result = Article(name=val[0], text=val[1], date=val[2], user_id=val[3])
+                return result
+            else:
+                return None
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -373,17 +369,18 @@ class ArticleModels(AbstractModels):
             return None
 
     def get_by_name(self, name: str) -> dict or None:
-        keys = ('title', 'text', 'date', 'author_id')
         sql = f'SELECT name, article_text, pub_date, users_id\
                 FROM articles\
                 WHERE name = {name} \
                 AND is_deleted = false;'
         try:
             self.cur.execute(sql)
-            values = self.cur.fetchall()
-            values = values[0]
-            response = dict(zip(keys, values))
-            return response
+            val = self.cur.fetchone()
+            if val is not None:
+                result = Article(name=val[0], text=val[1], date=val[2], user_id=val[3])
+                return result
+            else:
+                return None
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -397,16 +394,15 @@ class ArticleModels(AbstractModels):
             print(error)
             return None
 
-    def create(self, new_article: dict) -> dict or None:
+    def create(self, data: dataclass.Article) -> dict or None:
         sql = f"INSERT INTO articles(name, article_text, pub_date, users_id)\
-                VALUES('{new_article['name']}', '{new_article['text']}', '{new_article['date']}',\
-                '{new_article['author_id']}')\
+                VALUES('{data.name}', '{data.text}', '{data.date}','{data.author_id}')\
                 RETURNING id;"
         try:
             self.cur.execute(sql)
-            values = self.cur.fetchone()
-            response = {'article_id': values[0]}
-            return response
+            value = self.cur.fetchone()
+            result = ArticleResult(article_id=value[0])
+            return result
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -420,8 +416,8 @@ class ArticleModels(AbstractModels):
             print(error)
             return None
 
-    def update(self, data: dict) -> bool or None:
-        keys = ('name', 'text', 'date')
+    def update(self, data) -> bool or None:
+        keys = ('article_id', 'name', 'text', 'date')
         sql = f"SELECT name, article_text, pub_date FROM articles\
                 WHERE id = '{data['id']}';"
         try:
@@ -491,7 +487,7 @@ class ArticleModels(AbstractModels):
     def delete_by_name(self, name: str) -> bool or None:
         sql = f"UPDATE articles\
               SET is_deleted = true\
-              WHERE name = {name};"
+              WHERE name = '{name}';"
         try:
             self.cur.execute(sql)
             return True
@@ -521,8 +517,9 @@ class LikeModels(AbstractModels):
               order by count desc;"
         try:
             self.cur.execute(sql)
-            response = self.cur.fetchall()
-            return response
+            values = self.cur.fetchall()
+            result = [LikeGet(article_name=val[0], likes=val[1]) for val in values]
+            return result
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -548,8 +545,9 @@ class LikeModels(AbstractModels):
                 and article_like.is_deleted = false;'
         try:
             self.cur.execute(sql)
-            response = self.cur.fetchall()
-            return response
+            values = self.cur.fetchall()
+            result = [LikeGetById(article_name=val[0], user_name=val[1]) for val in values]
+            return result
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -570,13 +568,14 @@ class LikeModels(AbstractModels):
                 on article_like.articles_id = articles.id\
                 inner join users\
                 on article_like.users_id = users.id\
-                where articles.name = '{name}'\
+                where articles.name = {name}\
                 and article_like.is_deleted = false\
                 and articles.is_deleted = false;"
         try:
             self.cur.execute(sql)
-            response = self.cur.fetchall()
-            return response
+            values = self.cur.fetchall()
+            result = [LikeGetById(article_name=val[0], user_name=val[1]) for val in values]
+            return result
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -590,9 +589,9 @@ class LikeModels(AbstractModels):
             print(error)
             return None
 
-    def create(self, data: dict) -> bool or None:
+    def create(self, data) -> bool or None:
         sql = f"insert into article_like(articles_id, users_id)\
-                values('{data['article_id']}','{data['author_id']}');"
+                values('{data.article_id}','{data.user_id}');"
         try:
             self.cur.execute(sql)
             return True
@@ -609,7 +608,7 @@ class LikeModels(AbstractModels):
             print(error)
             return None
 
-    def update(self, data: dict) :
+    def update(self, data: dict):
         pass
 
     def delete(self) -> bool or None:
@@ -630,9 +629,9 @@ class LikeModels(AbstractModels):
             print(error)
             return None
 
-    def delete_by_id(self, article_id: str, author_id: str) -> bool or None:
-        sql = f"update article_like set is_deleted = true where articles_id = {article_id}\
-                and users_id = {author_id};"
+    def delete_by_id(self, data) -> bool or None:
+        sql = f"update article_like set is_deleted = true where articles_id = {data.article_id}\
+                and users_id = {data.user_id};"
         try:
             self.cur.execute(sql)
             return True
@@ -649,11 +648,11 @@ class LikeModels(AbstractModels):
             print(error)
             return None
 
-    def delete_by_name(self, title: str, name: str) -> bool or None:
+    def delete_by_name(self, data) -> bool or None:
         sql = f"update article_like set is_deleted = true where articles_id in\
-                (select id from articles where name = '{title}')\
+                (select id from articles where name = '{data.article_name}')\
                 and users_id in\
-                (select id from users where name ='{name}');"
+                (select id from users where name ='{data.user_name}');"
         try:
             self.cur.execute(sql)
             return True
@@ -683,8 +682,9 @@ class CommentModels(AbstractModels):
                and comments.is_deleted = false;"
         try:
             self.cur.execute(sql)
-            response = self.cur.fetchall()
-            return response
+            values = self.cur.fetchall()
+            result = [Comment(article_name=val[0], user_name=val[1], comment=val[2]) for val in values]
+            return result
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -710,8 +710,9 @@ class CommentModels(AbstractModels):
                 and comments.is_deleted = false;'
         try:
             self.cur.execute(sql)
-            response = self.cur.fetchall()
-            return response
+            values = self.cur.fetchall()
+            result = [Comment(article_name=val[0], user_name=val[1], comment=val[2]) for val in values]
+            return result
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -732,13 +733,14 @@ class CommentModels(AbstractModels):
                 on comments.articles_id = articles.id\
                 inner join users\
                 on comments.users_id = users.id\
-                where articles.name ='{name}'\
+                where articles.name ={name}\
                 and articles.is_deleted = false\
                 and comments.is_deleted = false;"
         try:
             self.cur.execute(sql)
-            response = self.cur.fetchall()
-            return response
+            values = self.cur.fetchall()
+            result = [Comment(article_name=val[0], user_name=val[1], comment=val[2]) for val in values]
+            return result
         except psycopg2.OperationalError as err:
             error = ("Операционная ошибка БД", err)
             print(error)
@@ -752,9 +754,9 @@ class CommentModels(AbstractModels):
             print(error)
             return None
 
-    def create(self, data: dict) -> bool or None:
-        sql = f"insert into comments(aricles_id, users_id, comment_text)\
-                values('{data['article_id']}', '{data['user_id']}', '{data['comment']}');"
+    def create(self, data) -> bool or None:
+        sql = f"insert into comments(articles_id, users_id, comment_text)\
+                values('{data.article_id}', '{data.user_id}', '{data.comment}');"
         try:
             self.cur.execute(sql)
             return True
@@ -771,10 +773,10 @@ class CommentModels(AbstractModels):
             print(error)
             return None
 
-    def update(self, data: dict) -> bool or None:
-        sql = f"update comments set comment_text = '{data['comment']}'\
-                where articles_id = '{data['article_id']}'\
-                and users_id = '{data['author_id']}' \
+    def update(self, data) -> bool or None:
+        sql = f"update comments set comment_text = '{data.comment}'\
+                where articles_id = '{data.article_id}'\
+                and users_id = '{data.user_id}' \
                 and is_deleted = false;"
         try:
             self.cur.execute(sql)
@@ -810,9 +812,9 @@ class CommentModels(AbstractModels):
             print(error)
             return None
 
-    def delete_by_id(self, article_id: str, author_id: str) -> bool or None:
-        sql = f"update comments set is_deleted = true where articles_id = {article_id}\
-                and users_id = {author_id};"
+    def delete_by_id(self, data) -> bool or None:
+        sql = f"update comments set is_deleted = true where articles_id = {data.article_id}\
+                and users_id = {data.user_id};"
         try:
             self.cur.execute(sql)
             return True
@@ -829,11 +831,11 @@ class CommentModels(AbstractModels):
             print(error)
             return None
 
-    def delete_by_name(self, title: str, name: str) -> bool or None:
+    def delete_by_name(self, data) -> bool or None:
         sql = f"update comments set is_deleted = true where articles_id in\
-                (select id from articles where name = '{title}')\
+                (select id from articles where name = {data.article_name})\
                 and users_id in\
-                (select id from users where name ='{name}');"
+                (select id from users where name ={data.user_name});"
         try:
             self.cur.execute(sql)
             return True

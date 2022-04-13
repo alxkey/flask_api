@@ -17,7 +17,6 @@ class UserView(MethodView):
 
     def get(self, user_id: str, name: str) -> dict or str:
         token = token_extraction()
-        logger.info(token)
         authorized = self.auth.authorization(token)
         if authorized:
             if user_id is None and name is None:
@@ -57,7 +56,6 @@ class UserView(MethodView):
 
     def post(self) -> dict or str:
         data = request.get_json()
-        logger.info(f"DATA: {data}")
         try:
             SchemaAddUser().load(data)
         except ValidationError as err:
