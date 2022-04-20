@@ -8,4 +8,5 @@ USER = env("user")
 PASSWORD = env("password")
 HOST = env("host")
 PORT = env("port")
+SECRET_KEY = env("key")
 
