@@ -4,7 +4,6 @@ from flask.views import MethodView
 from marshmallow import ValidationError
 
 from controller import ArticleController, LikeController, CommentController, UserController, AuthController
-from logger import logger
 from tokens import token_extraction
 from validation import SchemaAddArticle, SchemaUpdateArticle, SchemaAddLike, SchemaAddComment, SchemaAddUser, \
     SchemaUpdateUser
@@ -20,48 +19,44 @@ class UserView(MethodView):
         authorized = self.auth.authorization(token)
         if authorized:
             if user_id is None and name is None:
-                getting_all_users = self.__get()
-                response = make_response(getting_all_users)
+                all_users = self.__get()
+                response = make_response(all_users)
                 return response
             elif name is None:
-                getting_user_by_id = self.__get_by_id(user_id)
-                response = make_response(getting_user_by_id)
+                user_by_id = self.__get_by_id(user_id)
+                response = make_response(user_by_id)
                 return response
             else:
-                getting_user_by_name = self.__get_by_name(name)
-                response = make_response(getting_user_by_name)
+                user_by_name = self.__get_by_name(name)
+                response = make_response(user_by_name)
                 return response
         else:
-            err_authorization = "Ошибка авторизации", 401
-            response = make_response(err_authorization)
-            return response
+            raise SystemError("Get user, authorization error")
 
     def __get(self) -> dict:
-        getting_all_users = self.controller.get()
-        return getting_all_users
+        all_users = self.controller.get()
+        return all_users
 
     def __get_by_id(self, user_id) -> dict or str:
         if user_id.isdigit():
-            getting_user_by_id = self.controller.get_by_id(user_id)
-            return getting_user_by_id
+            user_by_id = self.controller.get_by_id(user_id)
+            return user_by_id
         else:
-            err_request = "Неправильный article_id", 400
-            return err_request
+            raise SystemError("Get user by id, wrong user_id")
 
     def __get_by_name(self, name):
-        getting_user_by_name = self.controller.get_by_name(name)
-        return getting_user_by_name
+        user_by_name = self.controller.get_by_name(name)
+        return user_by_name
 
     def post(self) -> dict or str:
         body_of_request = request.get_json()
         try:
             SchemaAddUser().load(body_of_request)
         except ValidationError as err:
-            error = err, 400
-            response = make_response(error)
+            raise SystemError(f"Create user, ValidationError: {err}")
         else:
-            user_crad = self.controller.post(body_of_request)
-            response = make_response(user_crad)
+            user_cred = self.controller.post(body_of_request)
+            response = make_response(user_cred)
         return response
 
     def put(self) -> dict or str:
@@ -72,16 +67,13 @@ class UserView(MethodView):
             try:
                 SchemaUpdateUser().load(body_of_request)
             except ValidationError as err:
-                error = err, 400
-                response = make_response(error)
+                raise SystemError(f"Update user, ValidationError: {err}")
             else:
                 result_of_update = self.controller.put(body_of_request)
                 response = make_response(result_of_update)
             return response
         else:
-            error = "Ошибка авторизации", 401
-            response = make_response(error)
-            return response
+            raise SystemError("Update user, authorization error")
 
     def delete(self, user_id: str, name: str) -> dict or str:
         token = token_extraction()
@@ -100,9 +92,7 @@ class UserView(MethodView):
                 response = make_response(result_of_delete)
                 return response
         else:
-            err_authorization = "Ошибка авторизации", 401
-            response = make_response(err_authorization)
-            return response
+            raise SystemError("Delete user, authorization error")
 
     def __delete(self):
         result_of_delete = self.controller.delete()
@@ -117,8 +107,7 @@ class UserView(MethodView):
             result_of_delete = self.controller.delete_by_id(user_id)
             return result_of_delete
         else:
-            err_request = "Неправильный article_id", 400
-            return err_request
+            raise SystemError("Delete user by id, wrong user_id")
 
 
 class ArticleView(MethodView):
@@ -131,37 +120,34 @@ class ArticleView(MethodView):
         authorized = self.auth.authorization(token)
         if authorized:
             if article_id is None and name is None:
-                getting_all_articles = self.__get()
-                response = make_response(getting_all_articles)
+                all_articles = self.__get()
+                response = make_response(all_articles)
                 return response
             elif name is None:
-                getting_article_by_id = self.__get_by_id(article_id)
-                response = make_response(getting_article_by_id)
+                article_by_id = self.__get_by_id(article_id)
+                response = make_response(article_by_id)
                 return response
             else:
-                getting_article_by_name = self.__get_by_name(name)
-                response = make_response(getting_article_by_name)
+                article_by_name = self.__get_by_name(name)
+                response = make_response(article_by_name)
                 return response
         else:
-            err_authorization = "Ошибка авторизации", 401
-            response = make_response(err_authorization)
-            return response
+            raise SystemError("Get article, authorization error")
 
     def __get(self) -> dict:
-        getting_all_articles = self.controller.get()
-        return getting_all_articles
+        all_articles = self.controller.get()
+        return all_articles
 
     def __get_by_id(self, article_id) -> dict or str:
         if article_id.isdigit():
-            getting_article_by_id = self.controller.get_by_id(article_id)
-            return getting_article_by_id
+            article_by_id = self.controller.get_by_id(article_id)
+            return article_by_id
         else:
-            err_request = "Неправильный article_id", 400
-            return err_request
+            raise SystemError("Get article by id, wrong article_id")
 
     def __get_by_name(self, name):
-        getting_article_by_name = self.controller.get_by_name(name)
-        return getting_article_by_name
+        article_by_name = self.controller.get_by_name(name)
+        return article_by_name
 
     def post(self) -> dict or str:
         token = token_extraction()
@@ -171,16 +157,13 @@ class ArticleView(MethodView):
             try:
                 SchemaAddArticle().load(body_of_request)
             except ValidationError as err:
-                error = err, 400
-                response = make_response(error)
+                raise SystemError(f"Create article, ValidationError: {err}")
             else:
                 article_id_and_code_resp = self.controller.post(body_of_request)
                 response = make_response(article_id_and_code_resp)
             return response
         else:
-            err_authorization = "Ошибка авторизации", 401
-            response = make_response(err_authorization)
-            return response
+            raise SystemError("Create article, authorization error")
 
     def put(self) -> dict or str:
         token = token_extraction()
@@ -190,16 +173,13 @@ class ArticleView(MethodView):
             try:
                 SchemaUpdateArticle().load(body_of_request)
             except ValidationError as err:
-                error = err, 400
-                response = make_response(error)
+                raise SystemError(f"Update article, ValidationError: {err}")
             else:
                  result_of_update = self.controller.put(body_of_request)
                  response = make_response(result_of_update)
             return response
         else:
-            err = "Ошибка авторизации", 401
-            response = make_response(err)
-            return response
+            raise SystemError("Update article, authorization error")
 
     def delete(self, article_id: str, name: str):
         token = token_extraction()
@@ -216,9 +196,7 @@ class ArticleView(MethodView):
                 response = make_response(result_of_delete)
             return response
         else:
-            err_authorization = "Ошибка авторизации", 401
-            response = make_response(err_authorization)
-            return response
+            raise SystemError("Delete article, authorization error")
 
     def __delete(self):
         result_of_delete = self.controller.delete()
@@ -233,8 +211,7 @@ class ArticleView(MethodView):
             result_of_delete = self.controller.delete_by_id(article_id)
             return result_of_delete
         else:
-            err_request = "Неправильный article_id", 400
-            return err_request
+            raise SystemError("Delete article by id, wrong article_id")
 
 
 class LikeView(MethodView):
@@ -247,35 +224,32 @@ class LikeView(MethodView):
         authorized = self.auth.authorization(token)
         if authorized:
             if article_id is None and name is None:
-                getting_all_likes = self.__get()
-                response = make_response(getting_all_likes)
+                all_likes = self.__get()
+                response = make_response(all_likes)
             elif name is None:
-                getting_like_by_id = self.__get_by_id(article_id)
-                response = make_response(getting_like_by_id)
+                like_by_id = self.__get_by_id(article_id)
+                response = make_response(like_by_id)
             else:
-                getting_like_by_name = self.__get_by_name(name)
-                response = make_response(getting_like_by_name)
+                like_by_name = self.__get_by_name(name)
+                response = make_response(like_by_name)
             return response
         else:
-            err_authorization = "Ошибка авторизации", 401
-            response = make_response(err_authorization)
-            return response
+            raise SystemError("Get like, authorization error")
 
     def __get(self) -> dict:
-        getting_all_likes = self.controller.get()
-        return getting_all_likes
+        all_likes = self.controller.get()
+        return all_likes
 
     def __get_by_id(self, article_id) -> dict or str:
         if article_id.isdigit():
-            getting_like_by_id = self.controller.get_by_id(article_id)
-            return getting_like_by_id
+            like_by_id = self.controller.get_by_id(article_id)
+            return like_by_id
         else:
-            err_request = "Неправильный article_id", 400
-            return err_request
+            raise SystemError("Get like by id, wrong article_id")
 
     def __get_by_name(self, name) -> dict or str:
-        getting_like_by_name = self.controller.get_by_name(name)
-        return getting_like_by_name
+        like_by_name = self.controller.get_by_name(name)
+        return like_by_name
 
     def post(self) -> dict or str:
         token = token_extraction()
@@ -285,16 +259,13 @@ class LikeView(MethodView):
             try:
                 SchemaAddLike().load(body_of_request)
             except ValidationError as err:
-                error =err, 400
-                response = make_response(error)
+                raise SystemError(f"Create like, ValidationError: {err}")
             else:
                 result_of_create = self.controller.post(body_of_request)
                 response = make_response(result_of_create)
             return response
         else:
-            error = "Ошибка авторизации", 401
-            response = make_response(error)
-            return response
+            raise SystemError("Create like, authorization error")
 
     def delete(self, article_id: str, author_id: str, title: str,  name: str) -> dict or str:
         token = token_extraction()
@@ -311,9 +282,7 @@ class LikeView(MethodView):
                 response = make_response(result_of_delete)
             return response
         else:
-            err_authorization = "Ошибка авторизации", 401
-            result = make_response(err_authorization)
-            return result
+            raise SystemError("Delete like, authorization error")
 
     def __delete(self) -> dict:
         result_of_delete = self.controller.delete()
@@ -324,8 +293,7 @@ class LikeView(MethodView):
             result_of_delete = self.controller.delete_by_id(article_id, author_id)
             return result_of_delete
         else:
-            err_request = "Неправильный article_id", 400
-            return err_request
+            raise SystemError("Delete like by id, wrong article_id")
 
     def __delete_by_name(self, title, name) -> dict:
         result_of_delete = self.controller.delete_by_name(title, name)
@@ -342,36 +310,33 @@ class CommentView(MethodView):
         authorized = self.auth.authorization(token)
         if authorized:
             if article_id is None and name is None:
-                getting_all_comments = self.__get()
-                response = make_response(getting_all_comments)
+                all_comments = self.__get()
+                response = make_response(all_comments)
             elif name is None:
-                getting_comment_by_id = self.__get_by_id(article_id)
-                response = make_response(getting_comment_by_id)
+                comment_by_id = self.__get_by_id(article_id)
+                response = make_response(comment_by_id)
             else:
-                getting_comment_by_name = self.__get_by_name(name)
-                response = make_response(getting_comment_by_name)
+                comment_by_name = self.__get_by_name(name)
+                response = make_response(comment_by_name)
             return response
         else:
-            err_authorization = "Ошибка авторизации", 401
-            response = make_response(err_authorization)
-            return response
+            raise SystemError("Get comment, authorization error")
 
     def __get(self) -> dict:
-        getting_all_comments = self.controller.get()
-        return getting_all_comments
+        all_comments = self.controller.get()
+        return all_comments
 
     def __get_by_id(self, article_id) -> dict or str:
         if article_id.isdigit():
-            getting_comment_by_id  = self.controller.get_by_id(article_id)
-            return getting_comment_by_id
+            comment_by_id = self.controller.get_by_id(article_id)
+            return comment_by_id
         else:
-            err_request = "Неправильный article_id", 400
-            return err_request
+            raise SystemError("Get comment by id, wrong article_id")
 
     def __get_by_name(self, name) -> dict or str:
 
-        getting_comment_by_name = self.controller.get_by_name(name)
-        return getting_comment_by_name
+        comment_by_name = self.controller.get_by_name(name)
+        return comment_by_name
 
     def post(self) -> dict or str:
         token = token_extraction()
@@ -381,16 +346,13 @@ class CommentView(MethodView):
             try:
                 SchemaAddComment().load(body_of_request)
             except ValidationError as err:
-                error = err, 400
-                response = make_response(error)
+                raise SystemError(f"Create comment, ValidationError: {err}")
             else:
                 result_of_create = self.controller.post(body_of_request)
                 response = make_response(result_of_create)
             return response
         else:
-            err_authorization = "Ошибка авторизации", 401
-            response = make_response(err_authorization)
-            return response
+            raise SystemError("Create comment, authorization error")
 
     def put(self) -> dict or str:
         token = token_extraction()
@@ -400,16 +362,13 @@ class CommentView(MethodView):
             try:
                 SchemaAddComment().load(body_of_request)
             except ValidationError as err:
-                error = err, 400
-                response = make_response(error)
+                raise SystemError(f"Update comment, ValidationError: {err}")
             else:
                 result_of_update = self.controller.put(body_of_request)
                 response = make_response(result_of_update)
             return response
         else:
-            err_authorization = "Ошибка авторизации", 401
-            response = make_response(err_authorization)
-            return response
+            raise SystemError("Update comment, authorization error")
 
     def delete(self, article_id: str, author_id: str, title: str, name: str) -> dict or str:
         token = token_extraction()
@@ -426,9 +385,7 @@ class CommentView(MethodView):
                 response = make_response(result_of_delete)
             return response
         else:
-            err_authorization = "Ошибка авторизации", 401
-            response = make_response(err_authorization)
-            return response
+            raise SystemError("Delete comment, authorization error")
 
     def __delete(self) -> dict:
         result_of_delete = self.controller.delete()
@@ -439,8 +396,7 @@ class CommentView(MethodView):
             result_of_delete = self.controller.delete_by_id(article_id, author_id)
             return result_of_delete
         else:
-            err_request = ("Неправильный article_id", 400)
-            return err_request
+            raise SystemError("Delete comment by id, wrong article_id")
 
     def __delete_by_name(self, title, name) -> dict:
         result_of_delete = self.controller.delete_by_name(title, name)

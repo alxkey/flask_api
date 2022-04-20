@@ -18,84 +18,59 @@ class UserController:
         self.models = UserModels()
 
     def get(self):
-        result = self.models.get()
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
-            serializer = jsonify(result)
-            response = (serializer, 200)
+        all_users = self.models.get()
+        serializer = jsonify(all_users)
+        response = (serializer, 200)
         return response
 
     def get_by_id(self, user_id: str):
-        result = self.models.get_by_id(user_id)
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
-            serializer = jsonify(result)
-            response = (serializer, 200)
+        user_by_id = self.models.get_by_id(user_id)
+        serializer = jsonify(user_by_id)
+        response = (serializer, 200)
         return response
 
     def get_by_name(self, name: str):
-        result = self.models.get_by_name(name)
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
-            serializer = jsonify(result)
-            response = (serializer, 200)
+        user_by_name = self.models.get_by_name(name)
+        serializer = jsonify(user_by_name)
+        response = (serializer, 200)
         return response
 
-    def post(self, user: dict):
-        print(user)
-        data = self.__to_dataclass(user)
-        result = self.models.create(data)
-        print(result)
-        print(type(result))
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
-            serializer = jsonify(result)
-            print(serializer)
-            print(type(serializer))
-            response = (serializer, 200)
+    def post(self, new_user_data: dict):
+        new_user = self.__to_user_dataclass(new_user_data)
+        user_cred = self.models.create(new_user)
+        serializer = jsonify(user_cred)
+        response = (serializer, 200)
         return response
 
-    def put(self, update_user: dict):
-        data = self.__to_dataclass(update_user)
-        result = self.models.update(data)
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
-            response = ("Все Ok", 200)
-        return response
+    def put(self, update_user_data: dict):
+        update_user = self.__to_user_dataclass(update_user_data)
+        result_of_update = self.models.update(update_user)
+        if result_of_update:
+            response_of_update = ("Все Ok", 200)
+            return response_of_update
 
-    def __to_dataclass(self, data: dict) -> User:
+    def __to_user_dataclass(self, data: dict) -> User:
         user = User(name=data['name'], password=data['password'], first_name=data['first_name'],
                     last_name=data['last_name'], age=data['age'])
         return user
 
     def delete(self):
-        result = self.models.delete()
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
+        result_of_delete = self.models.delete()
+        if result_of_delete:
             response = ("Все Ok", 200)
-        return response
+            return response
 
     def delete_by_name(self, name: str):
-        result = self.models.delete_by_name(name)
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
+        result_of_delete = self.models.delete_by_name(name)
+        if result_of_delete:
             response = ("Все Ok", 200)
-        return response
+            return response
 
     def delete_by_id(self, user_id: str):
-        result = self.models.delete_by_id(user_id)
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
+        result_of_delete = self.models.delete_by_id(user_id)
+        if result_of_delete:
             response = ("Все Ok", 200)
-        return response
+            return response
 
 
 class ArticleController:
@@ -103,82 +78,66 @@ class ArticleController:
          self.models = ArticleModels()
 
      def get(self):
-         result = self.models.get()
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
-             serializer = jsonify(result)
+         all_articles = self.models.get()
+         if all_articles:
+             serializer = jsonify(all_articles)
              response = (serializer, 200)
-         return response
+             return response
 
      def get_by_id(self, article_id: str):
-         result = self.models.get_by_id(article_id)
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
-             serializer = jsonify(result)
+         article_by_id = self.models.get_by_id(article_id)
+         if article_by_id:
+             serializer = jsonify(article_by_id)
              response = (serializer, 200)
-         return response
+             return response
 
      def get_by_name(self, name: str):
-         result = self.models.get_by_name(name)
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
-             serializer = jsonify(result)
+         article_by_name = self.models.get_by_name(name)
+         if article_by_name:
+             serializer = jsonify(article_by_name)
              response = (serializer, 200)
-         return response
+             return response
 
-     def post(self, new_article: dict):
-         data = self. __to_dataclass(new_article)
-         result = self.models.create(data)
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
-             serializer = jsonify(result)
+     def post(self, new_article_data: dict):
+         new_article = self. __to_article_create_dataclass(new_article_data)
+         article_id = self.models.create(new_article)
+         if article_id:
+             serializer = jsonify(article_id)
              response = (serializer, 200)
-         return response
+             return response
 
-     def put(self, update_article: dict):
-         data = self.__to_update_dataclass(update_article)
-         result = self.models.update(data)
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
+     def put(self, update_article_data: dict):
+         update_article = self.__to_article_update_dataclass(update_article_data)
+         result_of_update = self.models.update(update_article)
+         if result_of_update:
              response = ("Все Ok", 200)
-         return response
+             return response
 
-     def __to_dataclass(self, data: dict) -> Article:
+     def __to_article_create_dataclass(self, data: dict) -> Article:
          article = Article(name=data['name'], text=data['text'], date=data['date'], user_id=data['author_id'])
          return article
 
-     def __to_update_dataclass(self, data: dict) -> ArticleUpdate:
+     def __to_article_update_dataclass(self, data: dict) -> ArticleUpdate:
          article = ArticleUpdate(article_id=data['article_id'], name=data['name'], text=data['text'], date=data['date'])
          return article
 
      def delete(self):
-         result = self.models.delete()
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
+         result_of_delete = self.models.delete()
+         if result_of_delete:
              response = ("Все Ok", 200)
-         return response
+             return response
 
      def delete_by_name(self, name: str):
-         result = self.models.delete_by_name(name)
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
+         result_of_delete = self.models.delete_by_name(name)
+         if result_of_delete:
              response = ("Все Ok", 200)
-         return response
+             return response
 
      def delete_by_id(self, article_id: str):
-         result = self.models.delete_by_id(article_id)
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
+         result_of_delete = self.models.delete_by_id(article_id)
+         if result_of_delete:
              response = ("Все Ok", 200)
-         return response
+             return response
 
 
 class LikeController:
@@ -186,70 +145,56 @@ class LikeController:
          self.models = LikeModels()
 
      def get(self):
-         result = self.models.get()
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
-             serializer = jsonify(result)
+         all_likes = self.models.get()
+         if all_likes:
+             serializer = jsonify(all_likes )
              response = (serializer, 200)
-         return response
+             return response
 
      def get_by_id(self, article_id: str):
-         result = self.models.get_by_id(article_id)
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
-             serializer = jsonify(result)
+         like_by_id = self.models.get_by_id(article_id)
+         if like_by_id:
+             serializer = jsonify(like_by_id)
              response = (serializer, 200)
-         return response
+             return response
 
      def get_by_name(self, name: str):
-         result = self.models.get_by_name(name)
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
-             serializer = jsonify(result)
+         like_by_name = self.models.get_by_name(name)
+         if like_by_name:
+             serializer = jsonify(like_by_name)
              response = (serializer, 200)
-         return response
+             return response
 
-     def post(self, new_like: dict):
-         data = self.__to_dataclass(new_like)
-         result = self.models.create(data)
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
+     def post(self, new_like_data: dict):
+         new_like = self.__to_like_dataclass(new_like_data)
+         result_of_create = self.models.create(new_like)
+         if result_of_create:
              response = ("Все Ok", 200)
-         return response
+             return response
 
-     def __to_dataclass(self, data: dict) -> Like:
+     def __to_like_dataclass(self, data: dict) -> Like:
          like = Like(article_id=data['article_id'], user_id=data['user_id'])
          return like
 
      def delete(self):
-         result = self.models.delete()
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
+         result_of_delete = self.models.delete()
+         if result_of_delete:
              response = ("Все Ok", 200)
-         return response
+             return response
 
      def delete_by_name(self, title: str, name: str):
-         data = LikeGetById(article_name=title, user_name=name)
-         result = self.models.delete_by_name(data)
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
+         data_like = LikeGetById(article_name=title, user_name=name)
+         result_of_delete = self.models.delete_by_name(data_like)
+         if result_of_delete:
              response = ("Все Ok", 200)
-         return response
+             return response
 
      def delete_by_id(self, article_id: int, user_id: int):
-         data = Like(article_id=article_id, user_id=user_id)
-         result = self.models.delete_by_id(data)
-         if result is None:
-             response = ("Ошибка сервера", 500)
-         else:
+         data_like = Like(article_id=article_id, user_id=user_id)
+         result_of_delete = self.models.delete_by_id(data_like)
+         if result_of_delete:
              response = ("Все Ok", 200)
-         return response
+             return response
 
 
 class CommentController:
@@ -257,87 +202,71 @@ class CommentController:
         self.models = CommentModels()
 
     def get(self):
-        result = self.models.get()
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
-            serializer = jsonify(result)
+        all_comments = self.models.get()
+        if all_comments:
+            serializer = jsonify(all_comments)
             response = (serializer, 200)
-        return response
+            return response
 
     def get_by_id(self, article_id: str):
-        result = self.models.get_by_id(article_id)
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
-            serializer = jsonify(result)
+        comment_by_id = self.models.get_by_id(article_id)
+        if comment_by_id:
+            serializer = jsonify(comment_by_id)
             response = (serializer, 200)
-        return response
+            return response
 
     def get_by_name(self, name: str):
-        result = self.models.get_by_name(name)
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
-            serializer = jsonify(result)
+        comment_by_name = self.models.get_by_name(name)
+        if comment_by_name:
+            serializer = jsonify(comment_by_name)
             response = (serializer, 200)
-        return response
+            return response
 
-    def post(self, data: dict):
-        comment = self.__to_dataclass(data)
-        result = self.models.create(comment)
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
+    def post(self, new_comment_data: dict):
+        new_comment = self.__to_comment_dataclass(new_comment_data)
+        result_of_create = self.models.create(new_comment)
+        if result_of_create:
             response = ("Все Ok", 200)
-        return response
+            return response
 
-    def put(self, data: dict):
-        comment = self.__to_dataclass(data)
-        result = self.models.update(comment)
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
+    def put(self, update_comment_data: dict):
+        update_comment = self.__to_comment_dataclass(update_comment_data)
+        result_of_update = self.models.update(update_comment)
+        if result_of_update:
             response = ("Все Ok", 200)
-        return response
+            return response
 
-    def __to_dataclass(self, data: dict) -> CommentCreate: # bad naming
+    def __to_comment_dataclass(self, data: dict) -> CommentCreate: # bad naming
         comment = CommentCreate(article_id=data['article_id'], user_id=data['user_id'], comment=data['comment'])
         return comment
 
-    def __to_dataclass_id(self, article_id, author_id) -> CommentById:
+    def __to_comment_id_dataclass(self, article_id, author_id) -> CommentById:
         comment_by_id = CommentById(article_id=article_id, user_id=author_id)
         return comment_by_id
 
-    def __to_dataclass_name(self, title, name) -> CommentByName:
+    def __to_comment_name_dataclass(self, title, name) -> CommentByName:
         comment_by_name = CommentByName(article_name=title, user_name=name)
         return comment_by_name
 
     def delete(self):
-        result = self.models.delete()
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
+        result_of_delete = self.models.delete()
+        if result_of_delete:
             response = ("Все Ok", 200)
-        return response
+            return response
 
     def delete_by_name(self, title: str, name: str):
-        comment = self.__to_dataclass_name(title, name)
-        result = self.models.delete_by_name(comment)
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
+        delete_comment = self.__to_comment_name_dataclass(title, name)
+        result_of_delete = self.models.delete_by_name(delete_comment)
+        if result_of_delete:
             response = ("Все Ok", 200)
-        return response
+            return response
 
     def delete_by_id(self, article_id: str, author_id: str):
-        comment = self.__to_dataclass_id(article_id, author_id)
-        result = self.models.delete_by_id(comment)
-        if result is None:
-            response = ("Ошибка сервера", 500)
-        else:
+        delete_comment = self.__to_comment_id_dataclass(article_id, author_id)
+        result_of_delete = self.models.delete_by_id(delete_comment)
+        if result_of_delete:
             response = ("Все Ok", 200)
-        return response
+            return response
 
 
 

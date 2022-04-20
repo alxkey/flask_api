@@ -1,12 +1,11 @@
 from flask import Flask
 
-
-from views import ArticleView, LikeView, CommentView, UserView
 from logger import logger
+from views import ArticleView, LikeView, CommentView, UserView
 
 app = Flask(__name__)
 
-logger.info('################# START #################')
+logger.info('########################## START ##############################')
 
 
 api_user = UserView.as_view('user_view')
