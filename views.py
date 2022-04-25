@@ -1,4 +1,4 @@
-from flask import make_response
+from flask import make_response, Response
 from flask import request
 from flask.views import MethodView
 from marshmallow import ValidationError
@@ -14,7 +14,7 @@ class UserView(MethodView):
         self.controller = UserController()
         self.auth = AuthController()
 
-    def get(self, user_id: str, name: str) -> dict or str:
+    def get(self, user_id: str, name: str) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -33,22 +33,22 @@ class UserView(MethodView):
         else:
             raise SystemError("Get user, authorization error")
 
-    def __get(self) -> dict:
+    def __get(self) -> tuple:
         all_users = self.controller.get()
         return all_users
 
-    def __get_by_id(self, user_id) -> dict or str:
+    def __get_by_id(self, user_id: str) -> tuple:
         if user_id.isdigit():
             user_by_id = self.controller.get_by_id(user_id)
             return user_by_id
         else:
             raise SystemError("Get user by id, wrong user_id")
 
-    def __get_by_name(self, name):
+    def __get_by_name(self, name: str) -> tuple:
         user_by_name = self.controller.get_by_name(name)
         return user_by_name
 
-    def post(self) -> dict or str:
+    def post(self) -> Response:
         body_of_request = request.get_json()
         try:
             SchemaAddUser().load(body_of_request)
@@ -59,7 +59,7 @@ class UserView(MethodView):
             response = make_response(user_cred)
         return response
 
-    def put(self) -> dict or str:
+    def put(self) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -75,7 +75,7 @@ class UserView(MethodView):
         else:
             raise SystemError("Update user, authorization error")
 
-    def delete(self, user_id: str, name: str) -> dict or str:
+    def delete(self, user_id: str, name: str) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -94,15 +94,15 @@ class UserView(MethodView):
         else:
             raise SystemError("Delete user, authorization error")
 
-    def __delete(self):
+    def __delete(self) -> tuple:
         result_of_delete = self.controller.delete()
         return result_of_delete
 
-    def __delete_by_name(self, name):
+    def __delete_by_name(self, name: str) -> tuple:
         result_of_delete = self.controller.delete_by_name(name)
         return result_of_delete
 
-    def __delete_by_id(self, user_id) -> dict or str:
+    def __delete_by_id(self, user_id: str) -> tuple:
         if user_id.isdigit():
             result_of_delete = self.controller.delete_by_id(user_id)
             return result_of_delete
@@ -115,7 +115,7 @@ class ArticleView(MethodView):
         self.controller = ArticleController()
         self.auth = AuthController()
 
-    def get(self, article_id: str, name: str):
+    def get(self, article_id: str, name: str) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -134,22 +134,22 @@ class ArticleView(MethodView):
         else:
             raise SystemError("Get article, authorization error")
 
-    def __get(self) -> dict:
+    def __get(self) -> tuple:
         all_articles = self.controller.get()
         return all_articles
 
-    def __get_by_id(self, article_id) -> dict or str:
+    def __get_by_id(self, article_id: str) -> tuple:
         if article_id.isdigit():
             article_by_id = self.controller.get_by_id(article_id)
             return article_by_id
         else:
             raise SystemError("Get article by id, wrong article_id")
 
-    def __get_by_name(self, name):
+    def __get_by_name(self, name: str) -> tuple:
         article_by_name = self.controller.get_by_name(name)
         return article_by_name
 
-    def post(self) -> dict or str:
+    def post(self) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -165,7 +165,7 @@ class ArticleView(MethodView):
         else:
             raise SystemError("Create article, authorization error")
 
-    def put(self) -> dict or str:
+    def put(self) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -181,7 +181,7 @@ class ArticleView(MethodView):
         else:
             raise SystemError("Update article, authorization error")
 
-    def delete(self, article_id: str, name: str):
+    def delete(self, article_id: str, name: str) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -198,15 +198,15 @@ class ArticleView(MethodView):
         else:
             raise SystemError("Delete article, authorization error")
 
-    def __delete(self):
+    def __delete(self) -> tuple:
         result_of_delete = self.controller.delete()
         return result_of_delete
 
-    def __delete_by_name(self, name) -> dict:
+    def __delete_by_name(self, name: str) -> tuple:
         result_of_delete = self.controller.delete_by_name(name)
         return result_of_delete
 
-    def __delete_by_id(self, article_id) -> dict or str:
+    def __delete_by_id(self, article_id: str) -> tuple:
         if article_id.isdigit():
             result_of_delete = self.controller.delete_by_id(article_id)
             return result_of_delete
@@ -219,7 +219,7 @@ class LikeView(MethodView):
         self.controller = LikeController()
         self.auth = AuthController()
 
-    def get(self, article_id: str, name: str) -> dict or str:
+    def get(self, article_id: str, name: str) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -236,22 +236,22 @@ class LikeView(MethodView):
         else:
             raise SystemError("Get like, authorization error")
 
-    def __get(self) -> dict:
+    def __get(self) -> tuple:
         all_likes = self.controller.get()
         return all_likes
 
-    def __get_by_id(self, article_id) -> dict or str:
+    def __get_by_id(self, article_id: str) -> tuple:
         if article_id.isdigit():
             like_by_id = self.controller.get_by_id(article_id)
             return like_by_id
         else:
             raise SystemError("Get like by id, wrong article_id")
 
-    def __get_by_name(self, name) -> dict or str:
+    def __get_by_name(self, name: str) -> tuple:
         like_by_name = self.controller.get_by_name(name)
         return like_by_name
 
-    def post(self) -> dict or str:
+    def post(self) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -267,7 +267,7 @@ class LikeView(MethodView):
         else:
             raise SystemError("Create like, authorization error")
 
-    def delete(self, article_id: str, author_id: str, title: str,  name: str) -> dict or str:
+    def delete(self, article_id: str, author_id: str, title: str,  name: str) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -284,18 +284,18 @@ class LikeView(MethodView):
         else:
             raise SystemError("Delete like, authorization error")
 
-    def __delete(self) -> dict:
+    def __delete(self) -> tuple:
         result_of_delete = self.controller.delete()
         return result_of_delete
 
-    def __delete_by_id(self, article_id, author_id) -> dict or str:
+    def __delete_by_id(self, article_id: str, author_id: str) -> tuple:
         if article_id.isdigit() and author_id.isdigit():
             result_of_delete = self.controller.delete_by_id(article_id, author_id)
             return result_of_delete
         else:
             raise SystemError("Delete like by id, wrong article_id")
 
-    def __delete_by_name(self, title, name) -> dict:
+    def __delete_by_name(self, title: str, name: str) -> tuple:
         result_of_delete = self.controller.delete_by_name(title, name)
         return result_of_delete
 
@@ -305,7 +305,7 @@ class CommentView(MethodView):
         self.controller = CommentController()
         self.auth = AuthController()
 
-    def get(self, article_id: str, name: str) -> dict and str:
+    def get(self, article_id: str, name: str) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -322,23 +322,23 @@ class CommentView(MethodView):
         else:
             raise SystemError("Get comment, authorization error")
 
-    def __get(self) -> dict:
+    def __get(self) -> tuple:
         all_comments = self.controller.get()
         return all_comments
 
-    def __get_by_id(self, article_id) -> dict or str:
+    def __get_by_id(self, article_id: str) -> tuple:
         if article_id.isdigit():
             comment_by_id = self.controller.get_by_id(article_id)
             return comment_by_id
         else:
             raise SystemError("Get comment by id, wrong article_id")
 
-    def __get_by_name(self, name) -> dict or str:
+    def __get_by_name(self, name: str) -> tuple:
 
         comment_by_name = self.controller.get_by_name(name)
         return comment_by_name
 
-    def post(self) -> dict or str:
+    def post(self) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -354,7 +354,7 @@ class CommentView(MethodView):
         else:
             raise SystemError("Create comment, authorization error")
 
-    def put(self) -> dict or str:
+    def put(self) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -370,7 +370,7 @@ class CommentView(MethodView):
         else:
             raise SystemError("Update comment, authorization error")
 
-    def delete(self, article_id: str, author_id: str, title: str, name: str) -> dict or str:
+    def delete(self, article_id: str, author_id: str, title: str, name: str) -> Response:
         token = token_extraction()
         authorized = self.auth.authorization(token)
         if authorized:
@@ -387,17 +387,17 @@ class CommentView(MethodView):
         else:
             raise SystemError("Delete comment, authorization error")
 
-    def __delete(self) -> dict:
+    def __delete(self) -> tuple:
         result_of_delete = self.controller.delete()
         return result_of_delete
 
-    def __delete_by_id(self, article_id, author_id) -> dict or str:
+    def __delete_by_id(self, article_id: str, author_id: str) -> tuple:
         if article_id.isdigit() and author_id.isdigit():
             result_of_delete = self.controller.delete_by_id(article_id, author_id)
             return result_of_delete
         else:
             raise SystemError("Delete comment by id, wrong article_id")
 
-    def __delete_by_name(self, title, name) -> dict:
+    def __delete_by_name(self, title: str, name: str) -> tuple:
         result_of_delete = self.controller.delete_by_name(title, name)
         return result_of_delete
