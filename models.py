@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dataclasses import asdict
 
 import psycopg2
 
@@ -104,7 +105,7 @@ class AuthModel():
         self.conn = psycopg2.connect(**self.param)
         self.cur = self.conn.cursor()
 
-    def authorization(self, token: str) -> tuple :
+    def authorization(self, token: str) -> tuple:
         sql = f"SELECT user_id FROM tokens WHERE token = '{token}'"
         try:
             self.cur.execute(sql)
@@ -203,10 +204,7 @@ class UserModels(AbstractModels):
             raise SystemError(f"Create new user DB: Error, {err}")
 
     def update(self, user_update: User) -> bool:
-        dict_user_update = {"name": user_update.name, "password": user_update.password,
-                            "first_name": user_update.first_name, "last_name": user_update.last_name,
-                            "age": user_update.age}
-        keys = ('name', 'password', 'first_name', 'last_name', 'age')
+        keys = 'name', 'password', 'first_name', 'last_name', 'age'
         sql = f"SELECT name, password  FROM users\
                 WHERE first_name = '{user_update.first_name}'\
                 AND last_name = '{user_update.last_name}' \
@@ -216,12 +214,14 @@ class UserModels(AbstractModels):
             values = self.cur.fetchall()
             values = values[0]
             dict_from_db = dict(zip(keys, values))
+            dict_user = asdict(user_update)
+            dict_user_update = {k: v for k, v in dict_user.items() if v is not None}
             dict_for_db = {**dict_from_db, **dict_user_update}
             sql = f"UPDATE users SET name = '{dict_for_db.get('name')}',\
                     password = '{dict_for_db.get('password')}'\
-                    WHERE first_name = '{user_update.first_name}'\
-                    AND last_name = '{user_update.last_name}' \
-                    AND  age = '{user_update.age}' \
+                    WHERE first_name = '{dict_for_db.get('first_name')}'\
+                    AND last_name = '{dict_for_db.get('last_name')}' \
+                    AND  age = '{dict_for_db.get('age')}' \
                     AND is_deleted = false;"
             self.cur.execute(sql)
             return True
@@ -290,7 +290,7 @@ class ArticleModels(AbstractModels):
         except psycopg2.Error as err:
             raise SystemError(f"Get all articles DB: Error, {err}")
 
-    def get_by_id(self, article_id: int) -> Article:
+    def get_by_id(self, article_id: str) -> Article:
         sql = f'SELECT name, article_text, pub_date, users_id\
                 FROM articles\
                 WHERE id = {article_id}\
@@ -347,19 +347,21 @@ class ArticleModels(AbstractModels):
             raise SystemError(f"Create new article DB: Error, {err}")
 
     def update(self, article_update: ArticleUpdate) -> bool:
-        keys = ('article_id', 'name', 'text', 'date')
-        sql = f"SELECT name, article_text, pub_date FROM articles\
-                WHERE id = '{article_update['id']}';"
+        keys = 'article_id', 'name', 'text', 'date'
+        sql = f"SELECT id, name, article_text, pub_date FROM articles\
+                WHERE id = {article_update.article_id};"
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
             values = values[0]
             dict_from_db = dict(zip(keys, values))
-            dict_for_db = {**dict_from_db, **article_update}
+            dict_article = asdict(article_update)
+            dict_article_update = {k: v for k, v in dict_article.items() if v is not None}
+            dict_for_db = {**dict_from_db, **dict_article_update}
             sql = f"UPDATE articles SET name = '{dict_for_db.get('name')}',\
                     article_text = '{dict_for_db.get('text')}',\
                     pub_date = '{dict_for_db.get('date')}'\
-                    WHERE id = '{article_update['id']}' \
+                    WHERE id = '{article_update.article_id}' \
                     AND is_deleted = false;"
             self.cur.execute(sql)
             return True
@@ -433,7 +435,7 @@ class LikeModels(AbstractModels):
         except psycopg2.Error as err:
             raise SystemError(f"Get all likes DB: Error, {err}")
 
-    def get_by_id(self, article_id: int) -> list:
+    def get_by_id(self, article_id: str) -> list:
         sql = f'select articles.name, users.name\
                 from articles\
                 inner join article_like\

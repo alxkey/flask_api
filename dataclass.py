@@ -8,15 +8,15 @@ class Article:
     name: str
     text: str
     date: date
-    user_id: int
+    user_id: str
 
 
 @dataclass(frozen=True)
 class ArticleUpdate:
-    article_id: int
-    name: str
+    article_id: str
     text: str
     date: date
+    name: str
 
 
 @dataclass(frozen=True)
@@ -44,13 +44,13 @@ class UserGet:
 @dataclass(frozen=True)
 class UserResult:
     token: str
-    user_id: int
+    user_id: str
 
 
 @dataclass(frozen=True)
 class Like:
-    article_id: int
-    user_id: int
+    article_id: str
+    user_id: str
 
 
 @dataclass(frozen=True)
@@ -74,15 +74,15 @@ class Comment:
 
 @dataclass(frozen=True)
 class CommentCreate:
-    article_id: int
-    user_id: int
+    article_id: str
+    user_id: str
     comment: str
 
 
 @dataclass(frozen=True)
 class CommentById:
-    article_id: int
-    user_id: int
+    article_id: str
+    user_id: str
 
 
 @dataclass(frozen=True)
