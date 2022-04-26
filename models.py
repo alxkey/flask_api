@@ -134,7 +134,10 @@ class UserModels(AbstractModels):
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-            result = [UserGet(name=val[0], first_name=val[1], last_name=val[2], age=val[3]) for val in values]
+            result = [UserGet(name=val[0],
+                              first_name=val[1],
+                              last_name=val[2],
+                              age=val[3]) for val in values]
             return result
         except psycopg2.OperationalError as err:
             raise SystemError(f"Get all users DB: Operational Error, {err}")
@@ -152,7 +155,10 @@ class UserModels(AbstractModels):
             self.cur.execute(sql)
             val = self.cur.fetchone()
             if val:
-                result = UserGet(name=val[0], first_name=val[1], last_name=val[2], age=val[3])
+                result = UserGet(name=val[0],
+                                 first_name=val[1],
+                                 last_name=val[2],
+                                 age=val[3])
                 return result
             else:
                 raise SystemError("Get user by id DB: NO DATA")
@@ -172,7 +178,10 @@ class UserModels(AbstractModels):
             self.cur.execute(sql)
             val = self.cur.fetchone()
             if val:
-                result = UserGet(name=val[0], first_name=val[1], last_name=val[2], age=val[3])
+                result = UserGet(name=val[0],
+                                 first_name=val[1],
+                                 last_name=val[2],
+                                 age=val[3])
                 return result
             else:
                 raise SystemError("Get user by name 'DB': NO DATA")
@@ -193,8 +202,12 @@ class UserModels(AbstractModels):
             token = tg.generate(user_id)
             sql = f"BEGIN; \
                   INSERT INTO users(id, name, password, first_name, last_name, age)\
-                           VALUES('{user_id}', '{new_user.name}', '{new_user.password}', '{new_user.first_name}',\
-                           '{new_user.last_name}', '{new_user.age}');\
+                           VALUES('{user_id}', \
+                                  '{new_user.name}', \
+                                  '{new_user.password}', \
+                                  '{new_user.first_name}',\
+                                  '{new_user.last_name}',\
+                                  '{new_user.age}');\
                   INSERT INTO tokens (user_id, token) VALUES ({user_id}, '{token}');\
                   COMMIT;"
             self.cur.execute(sql)
@@ -281,7 +294,10 @@ class ArticleModels(AbstractModels):
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-            result = [Article(name=val[0], text=val[1], date=val[2], user_id=val[3]) for val in values]
+            result = [Article(name=val[0],
+                              text=val[1],
+                              date=val[2],
+                              user_id=val[3]) for val in values]
             return result
         except psycopg2.OperationalError as err:
             raise SystemError(f"Get all articles DB: Operational Error, {err}")
@@ -299,7 +315,10 @@ class ArticleModels(AbstractModels):
             self.cur.execute(sql)
             val = self.cur.fetchone()
             if val:
-                result = Article(name=val[0], text=val[1], date=val[2], user_id=val[3])
+                result = Article(name=val[0],
+                                 text=val[1],
+                                 date=val[2],
+                                 user_id=val[3])
                 return result
             else:
                 raise SystemError("Get article by id 'DB': NO DATA")
@@ -319,7 +338,10 @@ class ArticleModels(AbstractModels):
             self.cur.execute(sql)
             val = self.cur.fetchone()
             if val:
-                result = Article(name=val[0], text=val[1], date=val[2], user_id=val[3])
+                result = Article(name=val[0],
+                                 text=val[1],
+                                 date=val[2],
+                                 user_id=val[3])
                 return result
             else:
                 raise SystemError("Get article by name 'DB': NO DATA")
@@ -426,7 +448,8 @@ class LikeModels(AbstractModels):
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-            result = [LikeGet(article_name=val[0], likes=val[1]) for val in values]
+            result = [LikeGet(article_name=val[0],
+                              likes=val[1]) for val in values]
             return result
         except psycopg2.OperationalError as err:
             raise SystemError(f"Get all likes DB: Operational Error, {err}")
@@ -449,7 +472,8 @@ class LikeModels(AbstractModels):
             self.cur.execute(sql)
             values = self.cur.fetchall()
             if values:
-                result = [LikeGetById(article_name=val[0], user_name=val[1]) for val in values]
+                result = [LikeGetById(article_name=val[0],
+                                      user_name=val[1]) for val in values]
                 return result
             else:
                 raise SystemError("Get like by id 'DB': NO DATA")
@@ -474,7 +498,8 @@ class LikeModels(AbstractModels):
             self.cur.execute(sql)
             values = self.cur.fetchall()
             if values:
-                result = [LikeGetById(article_name=val[0], user_name=val[1]) for val in values]
+                result = [LikeGetById(article_name=val[0],
+                                      user_name=val[1]) for val in values]
                 return result
             else:
                 raise SystemError("Get like by name 'DB': NO DATA")
@@ -555,7 +580,9 @@ class CommentModels(AbstractModels):
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-            result = [Comment(article_name=val[0], user_name=val[1], comment=val[2]) for val in values]
+            result = [Comment(article_name=val[0],
+                              user_name=val[1],
+                              comment=val[2]) for val in values]
             return result
         except psycopg2.OperationalError as err:
             raise SystemError(f"Get all comments DB: Operational Error, {err}")
@@ -578,7 +605,9 @@ class CommentModels(AbstractModels):
             self.cur.execute(sql)
             values = self.cur.fetchall()
             if values:
-                result = [Comment(article_name=val[0], user_name=val[1], comment=val[2]) for val in values]
+                result = [Comment(article_name=val[0],
+                                  user_name=val[1],
+                                  comment=val[2]) for val in values]
                 return result
             else:
                 raise SystemError("Get comment by id DB: NO DATA")
@@ -603,7 +632,9 @@ class CommentModels(AbstractModels):
             self.cur.execute(sql)
             values = self.cur.fetchall()
             if values:
-                result = [Comment(article_name=val[0], user_name=val[1], comment=val[2]) for val in values]
+                result = [Comment(article_name=val[0],
+                                  user_name=val[1],
+                                  comment=val[2]) for val in values]
                 return result
             else:
                 raise SystemError("Get comment by name DB: NO DATA")

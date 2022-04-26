@@ -50,13 +50,9 @@ class UserView(MethodView):
 
     def post(self) -> Response:
         body_of_request = request.get_json()
-        try:
-            SchemaAddUser().load(body_of_request)
-        except ValidationError as err:
-            raise SystemError(f"Create user, ValidationError: {err}")
-        else:
-            user_cred = self.controller.post(body_of_request)
-            response = make_response(user_cred)
+        SchemaAddUser().load(body_of_request)
+        user_cred = self.controller.post(body_of_request)
+        response = make_response(user_cred)
         return response
 
     def put(self) -> Response:
@@ -64,13 +60,9 @@ class UserView(MethodView):
         authorized = self.auth.authorization(token)
         if authorized:
             body_of_request = request.get_json()
-            try:
-                SchemaUpdateUser().load(body_of_request)
-            except ValidationError as err:
-                raise SystemError(f"Update user, ValidationError: {err}")
-            else:
-                result_of_update = self.controller.put(body_of_request)
-                response = make_response(result_of_update)
+            SchemaUpdateUser().load(body_of_request)
+            result_of_update = self.controller.put(body_of_request)
+            response = make_response(result_of_update)
             return response
         else:
             raise SystemError("Update user, authorization error")
@@ -154,13 +146,9 @@ class ArticleView(MethodView):
         authorized = self.auth.authorization(token)
         if authorized:
             body_of_request = request.get_json()
-            try:
-                SchemaAddArticle().load(body_of_request)
-            except ValidationError as err:
-                raise SystemError(f"Create article, ValidationError: {err}")
-            else:
-                article_id_and_code_resp = self.controller.post(body_of_request)
-                response = make_response(article_id_and_code_resp)
+            SchemaAddArticle().load(body_of_request)
+            article_id_and_code_resp = self.controller.post(body_of_request)
+            response = make_response(article_id_and_code_resp)
             return response
         else:
             raise SystemError("Create article, authorization error")
@@ -170,13 +158,9 @@ class ArticleView(MethodView):
         authorized = self.auth.authorization(token)
         if authorized:
             body_of_request = request.get_json()
-            try:
-                SchemaUpdateArticle().load(body_of_request)
-            except ValidationError as err:
-                raise SystemError(f"Update article, ValidationError: {err}")
-            else:
-                 result_of_update = self.controller.put(body_of_request)
-                 response = make_response(result_of_update)
+            SchemaUpdateArticle().load(body_of_request)
+            result_of_update = self.controller.put(body_of_request)
+            response = make_response(result_of_update)
             return response
         else:
             raise SystemError("Update article, authorization error")
@@ -256,13 +240,9 @@ class LikeView(MethodView):
         authorized = self.auth.authorization(token)
         if authorized:
             body_of_request = request.get_json()
-            try:
-                SchemaAddLike().load(body_of_request)
-            except ValidationError as err:
-                raise SystemError(f"Create like, ValidationError: {err}")
-            else:
-                result_of_create = self.controller.post(body_of_request)
-                response = make_response(result_of_create)
+            SchemaAddLike().load(body_of_request)
+            result_of_create = self.controller.post(body_of_request)
+            response = make_response(result_of_create)
             return response
         else:
             raise SystemError("Create like, authorization error")
@@ -343,13 +323,9 @@ class CommentView(MethodView):
         authorized = self.auth.authorization(token)
         if authorized:
             body_of_request = request.get_json()
-            try:
-                SchemaAddComment().load(body_of_request)
-            except ValidationError as err:
-                raise SystemError(f"Create comment, ValidationError: {err}")
-            else:
-                result_of_create = self.controller.post(body_of_request)
-                response = make_response(result_of_create)
+            SchemaAddComment().load(body_of_request)
+            result_of_create = self.controller.post(body_of_request)
+            response = make_response(result_of_create)
             return response
         else:
             raise SystemError("Create comment, authorization error")
@@ -359,13 +335,9 @@ class CommentView(MethodView):
         authorized = self.auth.authorization(token)
         if authorized:
             body_of_request = request.get_json()
-            try:
-                SchemaAddComment().load(body_of_request)
-            except ValidationError as err:
-                raise SystemError(f"Update comment, ValidationError: {err}")
-            else:
-                result_of_update = self.controller.put(body_of_request)
-                response = make_response(result_of_update)
+            SchemaAddComment().load(body_of_request)
+            result_of_update = self.controller.put(body_of_request)
+            response = make_response(result_of_update)
             return response
         else:
             raise SystemError("Update comment, authorization error")
