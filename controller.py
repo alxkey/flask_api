@@ -1,7 +1,8 @@
 from flask import jsonify
 
 from models import UserModels, ArticleModels, LikeModels, CommentModels, AuthModel
-from dataclass import User, Article, ArticleUpdate, Like, LikeGetById, CommentCreate, CommentById, CommentByName
+from dataclass import User, UserUpdate,  Article, ArticleUpdate, Like, LikeGetById, CommentCreate, CommentById,\
+                      CommentByName
 
 
 class AuthController:
@@ -43,13 +44,22 @@ class UserController:
         return response
 
     def put(self, update_user_data: dict) -> tuple:
-        update_user = self.__to_user_dataclass(update_user_data)
+        update_user = self.__to_user_update_dataclass(update_user_data)
         self.models.update(update_user)
         response_of_update = "Ok", 200
         return response_of_update
 
     def __to_user_dataclass(self, data_user: dict) -> User:
         user = User(name=data_user.get('name'),
+                    password=data_user.get('password'),
+                    first_name=data_user.get('first_name'),
+                    last_name=data_user.get('last_name'),
+                    age=data_user.get('age'))
+        return user
+
+    def __to_user_update_dataclass(self, data_user: dict) -> UserUpdate:
+        user = UserUpdate(user_id=data_user.get('user_id'),
+                    name=data_user.get('name'),
                     password=data_user.get('password'),
                     first_name=data_user.get('first_name'),
                     last_name=data_user.get('last_name'),
@@ -118,7 +128,8 @@ class ArticleController:
          article = ArticleUpdate(article_id=data_article.get('article_id'),
                                  name=data_article.get('name'),
                                  text=data_article.get('text'),
-                                 date=data_article.get('date'))
+                                 date=data_article.get('date'),
+                                 user_id=data_article['author_id'])
          return article
 
      def delete(self) -> tuple:

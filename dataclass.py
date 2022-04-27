@@ -17,6 +17,7 @@ class ArticleUpdate:
     text: str
     date: date
     name: str
+    user_id: str
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,16 @@ class ArticleResult:
 
 @dataclass(frozen=True)
 class User:
+    name: str
+    password: str
+    first_name: str
+    last_name: str
+    age: int
+
+
+@dataclass(frozen=True)
+class UserUpdate:
+    user_id: str
     name: str
     password: str
     first_name: str

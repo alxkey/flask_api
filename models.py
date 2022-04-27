@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
-from dataclasses import asdict
 
 import psycopg2
 
 from config import DB_NAME, USER, PASSWORD, HOST, PORT
-from dataclass import User, UserResult, UserGet, ArticleResult, Article, ArticleUpdate, Like, LikeGet, LikeGetById, \
-    Comment, CommentCreate, CommentById, CommentByName
+from dataclass import User, UserUpdate, UserResult, UserGet, ArticleResult, Article, ArticleUpdate, Like, LikeGet, \
+    LikeGetById, Comment, CommentCreate, CommentById, CommentByName
 from tokens import TokenGen
 
 
@@ -216,26 +215,14 @@ class UserModels(AbstractModels):
         except psycopg2.DatabaseError as err:
             raise SystemError(f"Create new user DB: Error, {err}")
 
-    def update(self, user_update: User) -> bool:
-        keys = 'name', 'password', 'first_name', 'last_name', 'age'
-        sql = f"SELECT name, password  FROM users\
-                WHERE first_name = '{user_update.first_name}'\
-                AND last_name = '{user_update.last_name}' \
-                AND  age = '{user_update.age}';"
+    def update(self, user_update: UserUpdate) -> bool:
+        sql = f"UPDATE users SET name = '{user_update.name}',\
+                          password = '{user_update.password}',\
+                          first_name = '{user_update.first_name}',\
+                          last_name = '{user_update.last_name}',\
+                          age = '{user_update.age}'\
+                WHERE id = '{user_update.user_id}';"
         try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            values = values[0]
-            dict_from_db = dict(zip(keys, values))
-            dict_user = asdict(user_update)
-            dict_user_update = {k: v for k, v in dict_user.items() if v is not None}
-            dict_for_db = {**dict_from_db, **dict_user_update}
-            sql = f"UPDATE users SET name = '{dict_for_db.get('name')}',\
-                    password = '{dict_for_db.get('password')}'\
-                    WHERE first_name = '{dict_for_db.get('first_name')}'\
-                    AND last_name = '{dict_for_db.get('last_name')}' \
-                    AND  age = '{dict_for_db.get('age')}' \
-                    AND is_deleted = false;"
             self.cur.execute(sql)
             return True
         except psycopg2.OperationalError as err:
@@ -369,21 +356,12 @@ class ArticleModels(AbstractModels):
             raise SystemError(f"Create new article DB: Error, {err}")
 
     def update(self, article_update: ArticleUpdate) -> bool:
-        keys = 'article_id', 'name', 'text', 'date'
-        sql = f"SELECT id, name, article_text, pub_date FROM articles\
-                WHERE id = {article_update.article_id};"
         try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            values = values[0]
-            dict_from_db = dict(zip(keys, values))
-            dict_article = asdict(article_update)
-            dict_article_update = {k: v for k, v in dict_article.items() if v is not None}
-            dict_for_db = {**dict_from_db, **dict_article_update}
-            sql = f"UPDATE articles SET name = '{dict_for_db.get('name')}',\
-                    article_text = '{dict_for_db.get('text')}',\
-                    pub_date = '{dict_for_db.get('date')}'\
-                    WHERE id = '{article_update.article_id}' \
+            sql = f"UPDATE articles SET name = '{article_update.name}',\
+                    article_text = '{article_update.text}',\
+                    pub_date = '{article_update.date}',\
+                    users_id = '{article_update.user_id}'\
+                    WHERE id = '{article_update.article_id}'\
                     AND is_deleted = false;"
             self.cur.execute(sql)
             return True
