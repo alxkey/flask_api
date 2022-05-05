@@ -9,11 +9,12 @@ class SchemaAddUser(Schema):
 
 
 class SchemaUpdateUser(Schema):
+    user_id = fields.Number(as_string=True, required=True)
     name = fields.Str(validate=validate.Length(min=4))
     password = fields.Str()
-    first_name = fields.Str(validate=validate.Length(min=2), required=True)
-    last_name = fields.Str(validate=validate.Length(min=2), required=True)
-    age = fields.Number(as_string=True, required=True)
+    first_name = fields.Str(validate=validate.Length(min=2))
+    last_name = fields.Str(validate=validate.Length(min=2))
+    age = fields.Number(as_string=True)
 
 
 class SchemaAddArticle(Schema):
@@ -28,6 +29,7 @@ class SchemaUpdateArticle(Schema):
     name = fields.Str(validate=validate.Length(min=4))
     text = fields.Str(validate=validate.Length(min=4))
     date = fields.DateTime(format='%d.%m.%Y')
+    author_id = fields.Number(as_string=True)
 
 
 class SchemaAddLike(Schema):

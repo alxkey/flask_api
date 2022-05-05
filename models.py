@@ -1,11 +1,10 @@
 from abc import ABC, abstractmethod
-from dataclasses import asdict
 
 import psycopg2
 
 from config import DB_NAME, USER, PASSWORD, HOST, PORT
-from dataclass import User, UserResult, UserGet, ArticleResult, Article, ArticleUpdate, Like, LikeGet, LikeGetById, \
-    Comment, CommentCreate, CommentById, CommentByName
+from dataclass import User, UserUpdate, UserResult, UserGet, ArticleResult, Article, ArticleUpdate, Like, LikeGet, \
+    LikeGetById, Comment, CommentCreate, CommentById, CommentByName
 from tokens import TokenGen
 
 
@@ -106,6 +105,11 @@ class AuthModel():
         self.cur = self.conn.cursor()
 
     def authorization(self, token: str) -> tuple:
+        '''
+        User  authorization by token
+        :param token: user token
+        :return: user_id corresponding to the token
+        '''
         sql = f"SELECT user_id FROM tokens WHERE token = '{token}'"
         try:
             self.cur.execute(sql)
@@ -128,13 +132,20 @@ class AuthModel():
 
 class UserModels(AbstractModels):
     def get(self) -> list:
+        '''
+        Getting data from all users.
+        :return: data from all users
+        '''
         sql = 'SELECT name, first_name, last_name, age\
                FROM users\
                where is_deleted = false;'
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-            result = [UserGet(name=val[0], first_name=val[1], last_name=val[2], age=val[3]) for val in values]
+            result = [UserGet(name=val[0],
+                              first_name=val[1],
+                              last_name=val[2],
+                              age=val[3]) for val in values]
             return result
         except psycopg2.OperationalError as err:
             raise SystemError(f"Get all users DB: Operational Error, {err}")
@@ -144,6 +155,11 @@ class UserModels(AbstractModels):
             raise SystemError(f"Get all users DB: Error, {err}")
 
     def get_by_id(self, user_id: str) -> UserGet:
+        '''
+        Getting user data by id
+        :param user_id: - unique user identifier
+        :return: instance of user dataclass
+        '''
         sql = f'SELECT  name, first_name, last_name, age\
                 FROM users\
                 WHERE id = {user_id}\
@@ -152,7 +168,10 @@ class UserModels(AbstractModels):
             self.cur.execute(sql)
             val = self.cur.fetchone()
             if val:
-                result = UserGet(name=val[0], first_name=val[1], last_name=val[2], age=val[3])
+                result = UserGet(name=val[0],
+                                 first_name=val[1],
+                                 last_name=val[2],
+                                 age=val[3])
                 return result
             else:
                 raise SystemError("Get user by id DB: NO DATA")
@@ -164,6 +183,11 @@ class UserModels(AbstractModels):
             raise SystemError(f"Get user by id DB: Error, {err}")
 
     def get_by_name(self, name: str) -> UserGet:
+        '''
+        Getting user data by id
+        :param name: - unique user nic name
+        :return: instance of user dataclass
+        '''
         sql = f'SELECT name, first_name, last_name, age\
                 FROM users\
                 WHERE name = {name} \
@@ -172,7 +196,10 @@ class UserModels(AbstractModels):
             self.cur.execute(sql)
             val = self.cur.fetchone()
             if val:
-                result = UserGet(name=val[0], first_name=val[1], last_name=val[2], age=val[3])
+                result = UserGet(name=val[0],
+                                 first_name=val[1],
+                                 last_name=val[2],
+                                 age=val[3])
                 return result
             else:
                 raise SystemError("Get user by name 'DB': NO DATA")
@@ -184,6 +211,11 @@ class UserModels(AbstractModels):
             raise SystemError(f"Get user by name DB: Error, {err}")
 
     def create(self, new_user: User) -> UserResult:
+        '''
+        Creating new user
+        :param new_user: instance of user dataclass
+        :return: instance of user result dataclass (user_id, token)
+        '''
         tg = TokenGen()
         try:
             sql = f"SELECT max(id) FROM users;"
@@ -193,8 +225,12 @@ class UserModels(AbstractModels):
             token = tg.generate(user_id)
             sql = f"BEGIN; \
                   INSERT INTO users(id, name, password, first_name, last_name, age)\
-                           VALUES('{user_id}', '{new_user.name}', '{new_user.password}', '{new_user.first_name}',\
-                           '{new_user.last_name}', '{new_user.age}');\
+                           VALUES('{user_id}', \
+                                  '{new_user.name}', \
+                                  '{new_user.password}', \
+                                  '{new_user.first_name}',\
+                                  '{new_user.last_name}',\
+                                  '{new_user.age}');\
                   INSERT INTO tokens (user_id, token) VALUES ({user_id}, '{token}');\
                   COMMIT;"
             self.cur.execute(sql)
@@ -203,26 +239,19 @@ class UserModels(AbstractModels):
         except psycopg2.DatabaseError as err:
             raise SystemError(f"Create new user DB: Error, {err}")
 
-    def update(self, user_update: User) -> bool:
-        keys = 'name', 'password', 'first_name', 'last_name', 'age'
-        sql = f"SELECT name, password  FROM users\
-                WHERE first_name = '{user_update.first_name}'\
-                AND last_name = '{user_update.last_name}' \
-                AND  age = '{user_update.age}';"
+    def update(self, user_update: UserUpdate) -> bool:
+        '''
+        User updating
+        :param user_update: instance of user update  dataclass
+        :return: - successful updating response
+        '''
+        sql = f"UPDATE users SET name = '{user_update.name}',\
+                          password = '{user_update.password}',\
+                          first_name = '{user_update.first_name}',\
+                          last_name = '{user_update.last_name}',\
+                          age = '{user_update.age}'\
+                WHERE id = '{user_update.user_id}';"
         try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            values = values[0]
-            dict_from_db = dict(zip(keys, values))
-            dict_user = asdict(user_update)
-            dict_user_update = {k: v for k, v in dict_user.items() if v is not None}
-            dict_for_db = {**dict_from_db, **dict_user_update}
-            sql = f"UPDATE users SET name = '{dict_for_db.get('name')}',\
-                    password = '{dict_for_db.get('password')}'\
-                    WHERE first_name = '{dict_for_db.get('first_name')}'\
-                    AND last_name = '{dict_for_db.get('last_name')}' \
-                    AND  age = '{dict_for_db.get('age')}' \
-                    AND is_deleted = false;"
             self.cur.execute(sql)
             return True
         except psycopg2.OperationalError as err:
@@ -233,6 +262,10 @@ class UserModels(AbstractModels):
             raise SystemError(f"Update user DB: Error, {err}")
 
     def delete(self) -> bool:
+        '''
+        Removing data from all users.
+        :return: - successful delete response
+        '''
         sql = "UPDATE users SET is_deleted = true;"
         try:
             self.cur.execute(sql)
@@ -245,6 +278,11 @@ class UserModels(AbstractModels):
             raise SystemError(f"Delete all users DB: Error, {err}")
 
     def delete_by_id(self, user_id: str) -> bool:
+        '''
+        User removing by id
+        :param user_id: - unique user identifier
+        :return: - successful delete response
+        '''
         sql = f"UPDATE users\
                 SET is_deleted = true\
                 WHERE id = {user_id};"
@@ -259,6 +297,11 @@ class UserModels(AbstractModels):
             raise SystemError(f"Delete user by id DB: Error, {err}")
 
     def delete_by_name(self, name: str) -> bool:
+        '''
+        User removing by name
+        :param name: - unique user nic name
+        :return: - successful delete response
+        '''
         sql = f"UPDATE users\
               SET is_deleted = true\
               WHERE name = {name};"
@@ -275,13 +318,20 @@ class UserModels(AbstractModels):
 
 class ArticleModels(AbstractModels):
     def get(self) -> list:
+        '''
+        Getting data from all articles.
+        :return:  data from all articles
+        '''
         sql = 'SELECT name, article_text, pub_date, users_id\
                FROM articles\
                where is_deleted = false;'
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-            result = [Article(name=val[0], text=val[1], date=val[2], user_id=val[3]) for val in values]
+            result = [Article(name=val[0],
+                              text=val[1],
+                              date=val[2],
+                              user_id=val[3]) for val in values]
             return result
         except psycopg2.OperationalError as err:
             raise SystemError(f"Get all articles DB: Operational Error, {err}")
@@ -291,6 +341,11 @@ class ArticleModels(AbstractModels):
             raise SystemError(f"Get all articles DB: Error, {err}")
 
     def get_by_id(self, article_id: str) -> Article:
+        '''
+        Getting article by id
+        :param article_id: unique article identifier
+        :return: instance of article dataclass
+        '''
         sql = f'SELECT name, article_text, pub_date, users_id\
                 FROM articles\
                 WHERE id = {article_id}\
@@ -299,7 +354,10 @@ class ArticleModels(AbstractModels):
             self.cur.execute(sql)
             val = self.cur.fetchone()
             if val:
-                result = Article(name=val[0], text=val[1], date=val[2], user_id=val[3])
+                result = Article(name=val[0],
+                                 text=val[1],
+                                 date=val[2],
+                                 user_id=val[3])
                 return result
             else:
                 raise SystemError("Get article by id 'DB': NO DATA")
@@ -311,6 +369,11 @@ class ArticleModels(AbstractModels):
             raise SystemError(f"Get article by id DB: Error, {err}")
 
     def get_by_name(self, name: str) -> Article:
+        '''
+        Getting article by title
+        :param name: article title
+        :return: instance of article dataclass
+        '''
         sql = f'SELECT name, article_text, pub_date, users_id\
                 FROM articles\
                 WHERE name = {name} \
@@ -319,7 +382,10 @@ class ArticleModels(AbstractModels):
             self.cur.execute(sql)
             val = self.cur.fetchone()
             if val:
-                result = Article(name=val[0], text=val[1], date=val[2], user_id=val[3])
+                result = Article(name=val[0],
+                                 text=val[1],
+                                 date=val[2],
+                                 user_id=val[3])
                 return result
             else:
                 raise SystemError("Get article by name 'DB': NO DATA")
@@ -331,6 +397,11 @@ class ArticleModels(AbstractModels):
             raise SystemError(f"Get article by name DB: Error, {err}")
 
     def create(self, new_article: Article) -> ArticleResult:
+        '''
+        Creating new article
+        :param new_article: instance of article dataclass
+        :return: unique article identifier as dataclass
+        '''
         sql = f"INSERT INTO articles(name, article_text, pub_date, users_id)\
                 VALUES('{new_article.name}', '{new_article.text}', '{new_article.date}','{new_article.author_id}')\
                 RETURNING id;"
@@ -347,21 +418,17 @@ class ArticleModels(AbstractModels):
             raise SystemError(f"Create new article DB: Error, {err}")
 
     def update(self, article_update: ArticleUpdate) -> bool:
-        keys = 'article_id', 'name', 'text', 'date'
-        sql = f"SELECT id, name, article_text, pub_date FROM articles\
-                WHERE id = {article_update.article_id};"
+        '''
+        Updating article
+        :param article_update: instance of article dataclass
+        :return: - successful update response
+        '''
         try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            values = values[0]
-            dict_from_db = dict(zip(keys, values))
-            dict_article = asdict(article_update)
-            dict_article_update = {k: v for k, v in dict_article.items() if v is not None}
-            dict_for_db = {**dict_from_db, **dict_article_update}
-            sql = f"UPDATE articles SET name = '{dict_for_db.get('name')}',\
-                    article_text = '{dict_for_db.get('text')}',\
-                    pub_date = '{dict_for_db.get('date')}'\
-                    WHERE id = '{article_update.article_id}' \
+            sql = f"UPDATE articles SET name = '{article_update.name}',\
+                    article_text = '{article_update.text}',\
+                    pub_date = '{article_update.date}',\
+                    users_id = '{article_update.user_id}'\
+                    WHERE id = '{article_update.article_id}'\
                     AND is_deleted = false;"
             self.cur.execute(sql)
             return True
@@ -373,6 +440,10 @@ class ArticleModels(AbstractModels):
             raise SystemError(f"Update article DB: Error, {err}")
 
     def delete(self) -> bool:
+        '''
+        Removing data from all articles.
+        :return: - successful delete response
+        '''
         sql = "UPDATE articles SET is_deleted = true;"
         try:
             self.cur.execute(sql)
@@ -385,6 +456,11 @@ class ArticleModels(AbstractModels):
             raise SystemError(f"Delete all articles DB: Error, {err}")
 
     def delete_by_id(self, article_id: str) -> bool:
+        '''
+        Article removing by id
+        :param article_id: unique article identifier
+        :return: - successful delete response
+        '''
         sql = f"UPDATE articles\
                 SET is_deleted = true\
                 WHERE id = {article_id};"
@@ -399,6 +475,11 @@ class ArticleModels(AbstractModels):
             raise SystemError(f"Delete article by id DB: Error, {err}")
 
     def delete_by_name(self, name: str) -> bool:
+        '''
+        Article removing by title
+        :param name: article title
+        :return: - successful delete response
+        '''
         sql = f"UPDATE articles\
               SET is_deleted = true\
               WHERE name = '{name}';"
@@ -415,6 +496,10 @@ class ArticleModels(AbstractModels):
 
 class LikeModels(AbstractModels):
     def get(self) -> list:
+        '''
+        Getting data from all likes.
+        :return: data from all likes
+        '''
         sql = "select name, count(article_like.users_id)\
               from articles\
               inner join article_like\
@@ -426,7 +511,8 @@ class LikeModels(AbstractModels):
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-            result = [LikeGet(article_name=val[0], likes=val[1]) for val in values]
+            result = [LikeGet(article_name=val[0],
+                              likes=val[1]) for val in values]
             return result
         except psycopg2.OperationalError as err:
             raise SystemError(f"Get all likes DB: Operational Error, {err}")
@@ -436,6 +522,11 @@ class LikeModels(AbstractModels):
             raise SystemError(f"Get all likes DB: Error, {err}")
 
     def get_by_id(self, article_id: str) -> list:
+        '''
+        Getting likes by article id
+        :param article_id: unique article identifier
+        :return: data of likes
+        '''
         sql = f'select articles.name, users.name\
                 from articles\
                 inner join article_like\
@@ -449,7 +540,8 @@ class LikeModels(AbstractModels):
             self.cur.execute(sql)
             values = self.cur.fetchall()
             if values:
-                result = [LikeGetById(article_name=val[0], user_name=val[1]) for val in values]
+                result = [LikeGetById(article_name=val[0],
+                                      user_name=val[1]) for val in values]
                 return result
             else:
                 raise SystemError("Get like by id 'DB': NO DATA")
@@ -461,6 +553,11 @@ class LikeModels(AbstractModels):
             raise SystemError(f"Get like by id DB: Error, {err}")
 
     def get_by_name(self, name: str) -> list:
+        '''
+        Getting likes by article title
+        :param name: article title
+        :return: data of likes
+        '''
         sql = f"select articles.name, users.name\
                 from articles\
                 inner join article_like\
@@ -474,7 +571,8 @@ class LikeModels(AbstractModels):
             self.cur.execute(sql)
             values = self.cur.fetchall()
             if values:
-                result = [LikeGetById(article_name=val[0], user_name=val[1]) for val in values]
+                result = [LikeGetById(article_name=val[0],
+                                      user_name=val[1]) for val in values]
                 return result
             else:
                 raise SystemError("Get like by name 'DB': NO DATA")
@@ -486,6 +584,11 @@ class LikeModels(AbstractModels):
             raise SystemError(f"Get like by name DB: Error, {err}")
 
     def create(self, new_like: Like) -> bool:
+        '''
+        Creating new like
+        :param new_like: instance of like dataclass
+        :return: successful create response
+        '''
         sql = f"insert into article_like(articles_id, users_id)\
                 values('{new_like.article_id}','{new_like.user_id}');"
         try:
@@ -502,6 +605,10 @@ class LikeModels(AbstractModels):
         pass
 
     def delete(self) -> bool:
+        '''
+        Removing data from all likes.
+        :return: - successful delete response
+        '''
         sql = "UPDATE article_like SET is_deleted = true;"
         try:
             self.cur.execute(sql)
@@ -514,6 +621,11 @@ class LikeModels(AbstractModels):
             raise SystemError(f"Delete all likes DB: Error, {err}")
 
     def delete_by_id(self, delete_like: Like) -> bool:
+        '''
+        Like removing by article id  and user id
+        :param delete_like: instance of like dataclass
+        :return: - successful delete response
+        '''
         sql = f"update article_like set is_deleted = true where articles_id = {delete_like.article_id}\
                 and users_id = {delete_like.user_id};"
         try:
@@ -527,6 +639,11 @@ class LikeModels(AbstractModels):
             raise SystemError(f"Delete like by id DB: Error, {err}")
 
     def delete_by_name(self, delete_like: LikeGetById) -> bool:
+        '''
+        Like removing by article title and user nic name
+        :param delete_like: instance of like dataclass
+        :return: - successful delete response
+        '''
         sql = f"update article_like set is_deleted = true where articles_id in\
                 (select id from articles where name = '{delete_like.article_name}')\
                 and users_id in\
@@ -544,6 +661,10 @@ class LikeModels(AbstractModels):
 
 class CommentModels(AbstractModels):
     def get(self) -> list:
+        '''
+        Getting data from all comments.
+        :return: data from all comments
+        '''
         sql = "select articles.name, users.name, comments.comment_text\
                from articles\
                inner join comments\
@@ -555,7 +676,9 @@ class CommentModels(AbstractModels):
         try:
             self.cur.execute(sql)
             values = self.cur.fetchall()
-            result = [Comment(article_name=val[0], user_name=val[1], comment=val[2]) for val in values]
+            result = [Comment(article_name=val[0],
+                              user_name=val[1],
+                              comment=val[2]) for val in values]
             return result
         except psycopg2.OperationalError as err:
             raise SystemError(f"Get all comments DB: Operational Error, {err}")
@@ -565,6 +688,11 @@ class CommentModels(AbstractModels):
             raise SystemError(f"Get all comments DB: Error, {err}")
 
     def get_by_id(self, article_id: str) -> list:
+        '''
+        Getting comments by article id
+        :param article_id: unique article identifier
+        :return: data of comments
+        '''
         sql = f'select articles.name, users.name, comments.comment_text\
                 from articles\
                 inner join comments\
@@ -578,7 +706,9 @@ class CommentModels(AbstractModels):
             self.cur.execute(sql)
             values = self.cur.fetchall()
             if values:
-                result = [Comment(article_name=val[0], user_name=val[1], comment=val[2]) for val in values]
+                result = [Comment(article_name=val[0],
+                                  user_name=val[1],
+                                  comment=val[2]) for val in values]
                 return result
             else:
                 raise SystemError("Get comment by id DB: NO DATA")
@@ -590,6 +720,11 @@ class CommentModels(AbstractModels):
             raise SystemError(f"Get comment by id DB: Error, {err}")
 
     def get_by_name(self, name: str) -> list:
+        '''
+        Getting comments by article title
+        :param name: article title
+        :return: data of comments
+        '''
         sql = f"select articles.name, users.name, comments.comment_text\
                 from articles\
                 inner join comments\
@@ -603,7 +738,9 @@ class CommentModels(AbstractModels):
             self.cur.execute(sql)
             values = self.cur.fetchall()
             if values:
-                result = [Comment(article_name=val[0], user_name=val[1], comment=val[2]) for val in values]
+                result = [Comment(article_name=val[0],
+                                  user_name=val[1],
+                                  comment=val[2]) for val in values]
                 return result
             else:
                 raise SystemError("Get comment by name DB: NO DATA")
@@ -615,6 +752,11 @@ class CommentModels(AbstractModels):
             raise SystemError(f"Get comment by name DB: Error, {err}")
 
     def create(self, new_comment: CommentCreate) -> bool:
+        '''
+        Crearting new comment
+        :param new_comment: instance of comment dataclass
+        :return: - successful creating response
+        '''
         sql = f"insert into comments(articles_id, users_id, comment_text)\
                 values('{new_comment.article_id}', '{new_comment.user_id}', '{new_comment.comment}');"
         try:
@@ -628,6 +770,11 @@ class CommentModels(AbstractModels):
             raise SystemError(f"Create new comment DB: Error, {err}")
 
     def update(self, comment_update: CommentCreate) -> bool:
+        '''
+        Comment updating
+        :param comment_update: instance of comment dataclass
+        :return: - successful updating response
+        '''
         sql = f"update comments set comment_text = '{comment_update.comment}'\
                 where articles_id = '{comment_update.article_id}'\
                 and users_id = '{comment_update.user_id}' \
@@ -643,6 +790,10 @@ class CommentModels(AbstractModels):
             raise SystemError(f"Update comment DB: Error, {err}")
 
     def delete(self) -> bool:
+        '''
+        Removing data from all comments.
+        :return: - successful delete response
+        '''
         sql = "UPDATE comments SET is_deleted = true;"
         try:
             self.cur.execute(sql)
@@ -655,6 +806,11 @@ class CommentModels(AbstractModels):
             raise SystemError(f"Delete all comments DB: Error, {err}")
 
     def delete_by_id(self, comment_delete: CommentById) -> bool:
+        '''
+        Removing comment by article id and user id
+        :param comment_delete: instance of comment dataclass
+        :return: - successful delete response
+        '''
         sql = f"update comments set is_deleted = true where articles_id = {comment_delete.article_id}\
                 and users_id = {comment_delete.user_id};"
         try:
@@ -668,6 +824,11 @@ class CommentModels(AbstractModels):
             raise SystemError(f"Delete comment by id DB: Error, {err}")
 
     def delete_by_name(self, comment_delete: CommentByName) -> bool:
+        '''
+        Removing comment by article title and user nic name
+        :param comment_delete: instance of comment dataclass
+        :return: - successful delete response
+        '''
         sql = f"update comments set is_deleted = true where articles_id in\
                 (select id from articles where name = {comment_delete.article_name})\
                 and users_id in\
