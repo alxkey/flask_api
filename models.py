@@ -5,6 +5,7 @@ import psycopg2
 from config import DB_NAME, USER, PASSWORD, HOST, PORT
 from dataclass import User, UserUpdate, UserResult, UserGet, ArticleResult, Article, ArticleUpdate, Like, LikeGet, \
     LikeGetById, Comment, CommentCreate, CommentById, CommentByName
+from decorators import try_catch
 from tokens import TokenGen
 
 
@@ -104,6 +105,7 @@ class AuthModel():
         self.conn = psycopg2.connect(**self.param)
         self.cur = self.conn.cursor()
 
+    @try_catch
     def authorization(self, token: str) -> tuple:
         '''
         User  authorization by token
@@ -111,19 +113,12 @@ class AuthModel():
         :return: user_id corresponding to the token
         '''
         sql = f"SELECT user_id FROM tokens WHERE token = '{token}'"
-        try:
-            self.cur.execute(sql)
-            user_id = self.cur.fetchone()
-            if user_id:
-                return user_id
-            else:
-                raise SystemError("Authorization DB : NO DATA")
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Authorization DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Authorization DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Authorization DB: Error, {err}")
+        self.cur.execute(sql)
+        user_id = self.cur.fetchone()
+        if user_id:
+            return user_id
+        else:
+            raise SystemError("Authorization DB : NO DATA")
 
     def __del__(self):
         self.cur.close()
@@ -131,6 +126,7 @@ class AuthModel():
 
 
 class UserModels(AbstractModels):
+    @try_catch
     def get(self) -> list:
         '''
         Getting data from all users.
@@ -139,21 +135,15 @@ class UserModels(AbstractModels):
         sql = 'SELECT name, first_name, last_name, age\
                FROM users\
                where is_deleted = false;'
-        try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            result = [UserGet(name=val[0],
-                              first_name=val[1],
-                              last_name=val[2],
-                              age=val[3]) for val in values]
-            return result
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get all users DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get all users DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get all users DB: Error, {err}")
+        self.cur.execute(sql)
+        values = self.cur.fetchall()
+        result = [UserGet(name=val[0],
+                          first_name=val[1],
+                          last_name=val[2],
+                          age=val[3]) for val in values]
+        return result
 
+    @try_catch
     def get_by_id(self, user_id: str) -> UserGet:
         '''
         Getting user data by id
@@ -164,24 +154,18 @@ class UserModels(AbstractModels):
                 FROM users\
                 WHERE id = {user_id}\
                 AND is_deleted = false;'
-        try:
-            self.cur.execute(sql)
-            val = self.cur.fetchone()
-            if val:
-                result = UserGet(name=val[0],
-                                 first_name=val[1],
-                                 last_name=val[2],
-                                 age=val[3])
-                return result
-            else:
-                raise SystemError("Get user by id DB: NO DATA")
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get user by id DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get user by id DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get user by id DB: Error, {err}")
+        self.cur.execute(sql)
+        val = self.cur.fetchone()
+        if val:
+            result = UserGet(name=val[0],
+                             first_name=val[1],
+                             last_name=val[2],
+                             age=val[3])
+            return result
+        else:
+            raise SystemError("Get user by id DB: NO DATA")
 
+    @try_catch
     def get_by_name(self, name: str) -> UserGet:
         '''
         Getting user data by id
@@ -192,23 +176,16 @@ class UserModels(AbstractModels):
                 FROM users\
                 WHERE name = {name} \
                 AND is_deleted = false;'
-        try:
-            self.cur.execute(sql)
-            val = self.cur.fetchone()
-            if val:
-                result = UserGet(name=val[0],
-                                 first_name=val[1],
-                                 last_name=val[2],
-                                 age=val[3])
-                return result
-            else:
-                raise SystemError("Get user by name 'DB': NO DATA")
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get user by name DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get user by name DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get user by name DB: Error, {err}")
+        self.cur.execute(sql)
+        val = self.cur.fetchone()
+        if val:
+            result = UserGet(name=val[0],
+                             first_name=val[1],
+                             last_name=val[2],
+                             age=val[3])
+            return result
+        else:
+            raise SystemError("Get user by name 'DB': NO DATA")
 
     def create(self, new_user: User) -> UserResult:
         '''
@@ -239,6 +216,7 @@ class UserModels(AbstractModels):
         except psycopg2.DatabaseError as err:
             raise SystemError(f"Create new user DB: Error, {err}")
 
+    @try_catch
     def update(self, user_update: UserUpdate) -> bool:
         '''
         User updating
@@ -251,32 +229,20 @@ class UserModels(AbstractModels):
                           last_name = '{user_update.last_name}',\
                           age = '{user_update.age}'\
                 WHERE id = '{user_update.user_id}';"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Update user DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Update user DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Update user DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def delete(self) -> bool:
         '''
         Removing data from all users.
         :return: - successful delete response
         '''
         sql = "UPDATE users SET is_deleted = true;"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete all users DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete all users DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete all users DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def delete_by_id(self, user_id: str) -> bool:
         '''
         User removing by id
@@ -286,16 +252,10 @@ class UserModels(AbstractModels):
         sql = f"UPDATE users\
                 SET is_deleted = true\
                 WHERE id = {user_id};"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete user by id DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete user by id DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete user by id DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def delete_by_name(self, name: str) -> bool:
         '''
         User removing by name
@@ -305,18 +265,12 @@ class UserModels(AbstractModels):
         sql = f"UPDATE users\
               SET is_deleted = true\
               WHERE name = {name};"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete user by name DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete user by name DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete user by name DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
 
 class ArticleModels(AbstractModels):
+    @try_catch
     def get(self) -> list:
         '''
         Getting data from all articles.
@@ -325,21 +279,15 @@ class ArticleModels(AbstractModels):
         sql = 'SELECT name, article_text, pub_date, users_id\
                FROM articles\
                where is_deleted = false;'
-        try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            result = [Article(name=val[0],
-                              text=val[1],
-                              date=val[2],
-                              user_id=val[3]) for val in values]
-            return result
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get all articles DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get all articles DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get all articles DB: Error, {err}")
+        self.cur.execute(sql)
+        values = self.cur.fetchall()
+        result = [Article(name=val[0],
+                          text=val[1],
+                          date=val[2],
+                          user_id=val[3]) for val in values]
+        return result
 
+    @try_catch
     def get_by_id(self, article_id: str) -> Article:
         '''
         Getting article by id
@@ -350,24 +298,18 @@ class ArticleModels(AbstractModels):
                 FROM articles\
                 WHERE id = {article_id}\
                 AND is_deleted = false;'
-        try:
-            self.cur.execute(sql)
-            val = self.cur.fetchone()
-            if val:
-                result = Article(name=val[0],
-                                 text=val[1],
-                                 date=val[2],
-                                 user_id=val[3])
-                return result
-            else:
-                raise SystemError("Get article by id 'DB': NO DATA")
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get article by id DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get article by id DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get article by id DB: Error, {err}")
+        self.cur.execute(sql)
+        val = self.cur.fetchone()
+        if val:
+            result = Article(name=val[0],
+                             text=val[1],
+                             date=val[2],
+                             user_id=val[3])
+            return result
+        else:
+            raise SystemError("Get article by id 'DB': NO DATA")
 
+    @try_catch
     def get_by_name(self, name: str) -> Article:
         '''
         Getting article by title
@@ -378,24 +320,18 @@ class ArticleModels(AbstractModels):
                 FROM articles\
                 WHERE name = {name} \
                 AND is_deleted = false;'
-        try:
-            self.cur.execute(sql)
-            val = self.cur.fetchone()
-            if val:
-                result = Article(name=val[0],
-                                 text=val[1],
-                                 date=val[2],
-                                 user_id=val[3])
-                return result
-            else:
-                raise SystemError("Get article by name 'DB': NO DATA")
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get article by name DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get article by name DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get article by name DB: Error, {err}")
+        self.cur.execute(sql)
+        val = self.cur.fetchone()
+        if val:
+            result = Article(name=val[0],
+                             text=val[1],
+                             date=val[2],
+                             user_id=val[3])
+            return result
+        else:
+            raise SystemError("Get article by name 'DB': NO DATA")
 
+    @try_catch
     def create(self, new_article: Article) -> ArticleResult:
         '''
         Creating new article
@@ -405,56 +341,38 @@ class ArticleModels(AbstractModels):
         sql = f"INSERT INTO articles(name, article_text, pub_date, users_id)\
                 VALUES('{new_article.name}', '{new_article.text}', '{new_article.date}','{new_article.author_id}')\
                 RETURNING id;"
-        try:
-            self.cur.execute(sql)
-            value = self.cur.fetchone()
-            result = ArticleResult(article_id=value[0])
-            return result
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Create new article  DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Create new article DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Create new article DB: Error, {err}")
+        self.cur.execute(sql)
+        value = self.cur.fetchone()
+        result = ArticleResult(article_id=value[0])
+        return result
 
+    @try_catch
     def update(self, article_update: ArticleUpdate) -> bool:
         '''
         Updating article
         :param article_update: instance of article dataclass
         :return: - successful update response
         '''
-        try:
-            sql = f"UPDATE articles SET name = '{article_update.name}',\
-                    article_text = '{article_update.text}',\
-                    pub_date = '{article_update.date}',\
-                    users_id = '{article_update.user_id}'\
-                    WHERE id = '{article_update.article_id}'\
-                    AND is_deleted = false;"
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Update article DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Update article DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Update article DB: Error, {err}")
+        sql = f"UPDATE articles SET name = '{article_update.name}',\
+                article_text = '{article_update.text}',\
+                pub_date = '{article_update.date}',\
+                users_id = '{article_update.user_id}'\
+                WHERE id = '{article_update.article_id}'\
+                AND is_deleted = false;"
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def delete(self) -> bool:
         '''
         Removing data from all articles.
         :return: - successful delete response
         '''
         sql = "UPDATE articles SET is_deleted = true;"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete all articles DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete all articles DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete all articles DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def delete_by_id(self, article_id: str) -> bool:
         '''
         Article removing by id
@@ -464,16 +382,10 @@ class ArticleModels(AbstractModels):
         sql = f"UPDATE articles\
                 SET is_deleted = true\
                 WHERE id = {article_id};"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete article by id DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete article by id DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete article by id DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def delete_by_name(self, name: str) -> bool:
         '''
         Article removing by title
@@ -483,18 +395,12 @@ class ArticleModels(AbstractModels):
         sql = f"UPDATE articles\
               SET is_deleted = true\
               WHERE name = '{name}';"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete article by name DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete article by name DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete article by name DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
 
 class LikeModels(AbstractModels):
+    @try_catch
     def get(self) -> list:
         '''
         Getting data from all likes.
@@ -508,19 +414,13 @@ class LikeModels(AbstractModels):
               and articles.is_deleted = false\
               group by name\
               order by count desc;"
-        try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            result = [LikeGet(article_name=val[0],
-                              likes=val[1]) for val in values]
-            return result
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get all likes DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get all likes DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get all likes DB: Error, {err}")
+        self.cur.execute(sql)
+        values = self.cur.fetchall()
+        result = [LikeGet(article_name=val[0],
+                          likes=val[1]) for val in values]
+        return result
 
+    @try_catch
     def get_by_id(self, article_id: str) -> list:
         '''
         Getting likes by article id
@@ -536,22 +436,16 @@ class LikeModels(AbstractModels):
                 where articles.id = {article_id}\
                 and articles.is_deleted = false\
                 and article_like.is_deleted = false;'
-        try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            if values:
-                result = [LikeGetById(article_name=val[0],
-                                      user_name=val[1]) for val in values]
-                return result
-            else:
-                raise SystemError("Get like by id 'DB': NO DATA")
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get like by id DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get like by id DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get like by id DB: Error, {err}")
+        self.cur.execute(sql)
+        values = self.cur.fetchall()
+        if values:
+            result = [LikeGetById(article_name=val[0],
+                                  user_name=val[1]) for val in values]
+            return result
+        else:
+            raise SystemError("Get like by id 'DB': NO DATA")
 
+    @try_catch
     def get_by_name(self, name: str) -> list:
         '''
         Getting likes by article title
@@ -567,22 +461,16 @@ class LikeModels(AbstractModels):
                 where articles.name = {name}\
                 and article_like.is_deleted = false\
                 and articles.is_deleted = false;"
-        try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            if values:
-                result = [LikeGetById(article_name=val[0],
-                                      user_name=val[1]) for val in values]
-                return result
-            else:
-                raise SystemError("Get like by name 'DB': NO DATA")
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get like by name DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get like by name DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get like by name DB: Error, {err}")
+        self.cur.execute(sql)
+        values = self.cur.fetchall()
+        if values:
+            result = [LikeGetById(article_name=val[0],
+                                  user_name=val[1]) for val in values]
+            return result
+        else:
+            raise SystemError("Get like by name 'DB': NO DATA")
 
+    @try_catch
     def create(self, new_like: Like) -> bool:
         '''
         Creating new like
@@ -591,35 +479,23 @@ class LikeModels(AbstractModels):
         '''
         sql = f"insert into article_like(articles_id, users_id)\
                 values('{new_like.article_id}','{new_like.user_id}');"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Create new like DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Create new like DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Create new like DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
     def update(self, data: dict):
         pass
 
+    @try_catch
     def delete(self) -> bool:
         '''
         Removing data from all likes.
         :return: - successful delete response
         '''
         sql = "UPDATE article_like SET is_deleted = true;"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete all likes DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete all likes DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete all likes DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def delete_by_id(self, delete_like: Like) -> bool:
         '''
         Like removing by article id  and user id
@@ -628,16 +504,10 @@ class LikeModels(AbstractModels):
         '''
         sql = f"update article_like set is_deleted = true where articles_id = {delete_like.article_id}\
                 and users_id = {delete_like.user_id};"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete like by id DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete like by id DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete like by id DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def delete_by_name(self, delete_like: LikeGetById) -> bool:
         '''
         Like removing by article title and user nic name
@@ -648,18 +518,12 @@ class LikeModels(AbstractModels):
                 (select id from articles where name = '{delete_like.article_name}')\
                 and users_id in\
                 (select id from users where name ='{delete_like.user_name}');"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete like by name DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete like by name DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete like by name DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
 
 class CommentModels(AbstractModels):
+    @try_catch
     def get(self) -> list:
         '''
         Getting data from all comments.
@@ -673,20 +537,14 @@ class CommentModels(AbstractModels):
                on comments.users_id = users.id\
                and articles.is_deleted = false\
                and comments.is_deleted = false;"
-        try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            result = [Comment(article_name=val[0],
-                              user_name=val[1],
-                              comment=val[2]) for val in values]
-            return result
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get all comments DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get all comments DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get all comments DB: Error, {err}")
+        self.cur.execute(sql)
+        values = self.cur.fetchall()
+        result = [Comment(article_name=val[0],
+                          user_name=val[1],
+                          comment=val[2]) for val in values]
+        return result
 
+    @try_catch
     def get_by_id(self, article_id: str) -> list:
         '''
         Getting comments by article id
@@ -702,23 +560,17 @@ class CommentModels(AbstractModels):
                 where articles.id = {article_id}\
                 and articles.is_deleted = false\
                 and comments.is_deleted = false;'
-        try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            if values:
-                result = [Comment(article_name=val[0],
-                                  user_name=val[1],
-                                  comment=val[2]) for val in values]
-                return result
-            else:
-                raise SystemError("Get comment by id DB: NO DATA")
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get comment by id DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get comment by id DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get comment by id DB: Error, {err}")
+        self.cur.execute(sql)
+        values = self.cur.fetchall()
+        if values:
+            result = [Comment(article_name=val[0],
+                              user_name=val[1],
+                              comment=val[2]) for val in values]
+            return result
+        else:
+            raise SystemError("Get comment by id DB: NO DATA")
 
+    @try_catch
     def get_by_name(self, name: str) -> list:
         '''
         Getting comments by article title
@@ -734,23 +586,17 @@ class CommentModels(AbstractModels):
                 where articles.name ={name}\
                 and articles.is_deleted = false\
                 and comments.is_deleted = false;"
-        try:
-            self.cur.execute(sql)
-            values = self.cur.fetchall()
-            if values:
-                result = [Comment(article_name=val[0],
-                                  user_name=val[1],
-                                  comment=val[2]) for val in values]
-                return result
-            else:
-                raise SystemError("Get comment by name DB: NO DATA")
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Get comment by name DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Get comment by name DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Get comment by name DB: Error, {err}")
+        self.cur.execute(sql)
+        values = self.cur.fetchall()
+        if values:
+            result = [Comment(article_name=val[0],
+                              user_name=val[1],
+                              comment=val[2]) for val in values]
+            return result
+        else:
+            raise SystemError("Get comment by name DB: NO DATA")
 
+    @try_catch
     def create(self, new_comment: CommentCreate) -> bool:
         '''
         Crearting new comment
@@ -759,16 +605,10 @@ class CommentModels(AbstractModels):
         '''
         sql = f"insert into comments(articles_id, users_id, comment_text)\
                 values('{new_comment.article_id}', '{new_comment.user_id}', '{new_comment.comment}');"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Create new comment DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Create new comment DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Create new comment DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def update(self, comment_update: CommentCreate) -> bool:
         '''
         Comment updating
@@ -779,32 +619,20 @@ class CommentModels(AbstractModels):
                 where articles_id = '{comment_update.article_id}'\
                 and users_id = '{comment_update.user_id}' \
                 and is_deleted = false;"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Update comment DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Update comment DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Update comment DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def delete(self) -> bool:
         '''
         Removing data from all comments.
         :return: - successful delete response
         '''
         sql = "UPDATE comments SET is_deleted = true;"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete all comments DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete all comments DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete all comments DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def delete_by_id(self, comment_delete: CommentById) -> bool:
         '''
         Removing comment by article id and user id
@@ -813,16 +641,10 @@ class CommentModels(AbstractModels):
         '''
         sql = f"update comments set is_deleted = true where articles_id = {comment_delete.article_id}\
                 and users_id = {comment_delete.user_id};"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete comment by id DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete comment by id DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete comment by id DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
+    @try_catch
     def delete_by_name(self, comment_delete: CommentByName) -> bool:
         '''
         Removing comment by article title and user nic name
@@ -833,15 +655,8 @@ class CommentModels(AbstractModels):
                 (select id from articles where name = {comment_delete.article_name})\
                 and users_id in\
                 (select id from users where name ={comment_delete.user_name});"
-        try:
-            self.cur.execute(sql)
-            return True
-        except psycopg2.OperationalError as err:
-            raise SystemError(f"Delete comment by name DB: Operational Error, {err}")
-        except psycopg2.InternalError as err:
-            raise SystemError(f"Delete comment by name DB: Internal Error, {err}")
-        except psycopg2.Error as err:
-            raise SystemError(f"Delete comment by name DB: Error, {err}")
+        self.cur.execute(sql)
+        return True
 
 
 def main():
