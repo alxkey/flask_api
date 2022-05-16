@@ -1,5 +1,8 @@
 import psycopg2
 
+from tokens import token_extraction
+
+
 def try_catch(func):
     def wrapper(*args, **kwargs):
         try:
@@ -13,3 +16,17 @@ def try_catch(func):
             raise SystemError(f"Get all users DB: Error, {err}")
     return wrapper
 
+
+def authorize(func):
+    from controller import AuthController
+
+    def wrapper(*args, **kwargs):
+        token = token_extraction()
+        auth = AuthController()
+        authorized = auth.authorization(token)
+        if authorized:
+            ret = func(*args, **kwargs)
+            return ret
+        else:
+            raise SystemError("Get user, authorization error")
+    return wrapper

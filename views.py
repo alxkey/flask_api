@@ -1,10 +1,11 @@
+from typing import Optional
+
 from flask import make_response, Response
 from flask import request
 from flask.views import MethodView
-from typing import Optional
 
-from controller import ArticleController, LikeController, CommentController, UserController, AuthController
-from tokens import token_extraction
+from controller import ArticleController, LikeController, CommentController, UserController
+from decorators import authorize
 from validation import SchemaAddArticle, SchemaUpdateArticle, SchemaAddLike, SchemaAddComment, SchemaAddUser, \
     SchemaUpdateUser
 
@@ -12,8 +13,8 @@ from validation import SchemaAddArticle, SchemaUpdateArticle, SchemaAddLike, Sch
 class UserView(MethodView):
     def __init__(self):
         self.controller = UserController()
-        self.auth = AuthController()
 
+    @authorize
     def get(self, user_id: Optional[str], name: Optional[str]) -> Response:
         '''
         Processes a get request to get user data:
@@ -22,23 +23,19 @@ class UserView(MethodView):
         :param name: - unique user nic name
         :return: data from all users or user data
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            if user_id is None and name is None:
-                all_users = self.__get()
-                response = make_response(all_users)
-                return response
-            elif name is None:
-                user_by_id = self.__get_by_id(user_id)
-                response = make_response(user_by_id)
-                return response
-            else:
-                user_by_name = self.__get_by_name(name)
-                response = make_response(user_by_name)
-                return response
+
+        if user_id is None and name is None:
+            all_users = self.__get()
+            response = make_response(all_users)
+            return response
+        elif name is None:
+            user_by_id = self.__get_by_id(user_id)
+            response = make_response(user_by_id)
+            return response
         else:
-            raise SystemError("Get user, authorization error")
+            user_by_name = self.__get_by_name(name)
+            response = make_response(user_by_name)
+            return response
 
     def __get(self) -> tuple:
         '''
@@ -81,22 +78,19 @@ class UserView(MethodView):
         response = make_response(user_cred)
         return response
 
+    @authorize
     def put(self) -> Response:
         '''
         User updating
         :return: - successful update response
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            body_of_request = request.get_json()
-            SchemaUpdateUser().load(body_of_request)
-            result_of_update = self.controller.put(body_of_request)
-            response = make_response(result_of_update)
-            return response
-        else:
-            raise SystemError("Update user, authorization error")
+        body_of_request = request.get_json()
+        SchemaUpdateUser().load(body_of_request)
+        result_of_update = self.controller.put(body_of_request)
+        response = make_response(result_of_update)
+        return response
 
+    @authorize
     def delete(self, user_id: Optional[str], name: Optional[str]) -> Response:
         '''
         User removing process
@@ -105,23 +99,18 @@ class UserView(MethodView):
         :param name: - unique user nic name
         :return: - successful delete response
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            if user_id is None and name is None:
-                result_of_delete = self.__delete()
-                response = make_response(result_of_delete)
-                return response
-            elif name is None:
-                result_of_delete = self.__delete_by_id(user_id)
-                response = make_response(result_of_delete)
-                return response
-            else:
-                result_of_delete = self.__delete_by_name(name)
-                response = make_response(result_of_delete)
-                return response
+        if user_id is None and name is None:
+            result_of_delete = self.__delete()
+            response = make_response(result_of_delete)
+            return response
+        elif name is None:
+            result_of_delete = self.__delete_by_id(user_id)
+            response = make_response(result_of_delete)
+            return response
         else:
-            raise SystemError("Delete user, authorization error")
+            result_of_delete = self.__delete_by_name(name)
+            response = make_response(result_of_delete)
+            return response
 
     def __delete(self) -> tuple:
         '''
@@ -157,8 +146,8 @@ class UserView(MethodView):
 class ArticleView(MethodView):
     def __init__(self):
         self.controller = ArticleController()
-        self.auth = AuthController()
 
+    @authorize
     def get(self, article_id: Optional[str], name: Optional[str]) -> Response:
         '''
         Processes a get request to get articles:
@@ -167,23 +156,18 @@ class ArticleView(MethodView):
         :param name:   - article title
         :return:  all articles or article
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            if article_id is None and name is None:
-                all_articles = self.__get()
-                response = make_response(all_articles)
-                return response
-            elif name is None:
-                article_by_id = self.__get_by_id(article_id)
-                response = make_response(article_by_id)
-                return response
-            else:
-                article_by_name = self.__get_by_name(name)
-                response = make_response(article_by_name)
-                return response
+        if article_id is None and name is None:
+            all_articles = self.__get()
+            response = make_response(all_articles)
+            return response
+        elif name is None:
+            article_by_id = self.__get_by_id(article_id)
+            response = make_response(article_by_id)
+            return response
         else:
-            raise SystemError("Get article, authorization error")
+            article_by_name = self.__get_by_name(name)
+            response = make_response(article_by_name)
+            return response
 
     def __get(self) -> tuple:
         '''
@@ -215,38 +199,31 @@ class ArticleView(MethodView):
         article_by_name = self.controller.get_by_name(name)
         return article_by_name
 
+    @authorize
     def post(self) -> Response:
         '''
         Creating new article
         :return:  - unique article identifier
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            body_of_request = request.get_json()
-            SchemaAddArticle().load(body_of_request)
-            article_id_and_code_resp = self.controller.post(body_of_request)
-            response = make_response(article_id_and_code_resp)
-            return response
-        else:
-            raise SystemError("Create article, authorization error")
+        body_of_request = request.get_json()
+        SchemaAddArticle().load(body_of_request)
+        article_id_and_code_resp = self.controller.post(body_of_request)
+        response = make_response(article_id_and_code_resp)
+        return response
 
+    @authorize
     def put(self) -> Response:
         '''
         Article updating
         :return:  - successful updating response
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            body_of_request = request.get_json()
-            SchemaUpdateArticle().load(body_of_request)
-            result_of_update = self.controller.put(body_of_request)
-            response = make_response(result_of_update)
-            return response
-        else:
-            raise SystemError("Update article, authorization error")
+        body_of_request = request.get_json()
+        SchemaUpdateArticle().load(body_of_request)
+        result_of_update = self.controller.put(body_of_request)
+        response = make_response(result_of_update)
+        return response
 
+    @authorize
     def delete(self, article_id: Optional[str], name: Optional[str]) -> Response:
         '''
         Articles removing process
@@ -255,21 +232,16 @@ class ArticleView(MethodView):
         :param name:  - article title
         :return:  - successful delete response
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            if article_id is None and name is None:
-                result_of_delete = self.__delete()
-                response = make_response(result_of_delete)
-            elif name is None:
-                result_of_delete = self.__delete_by_id(article_id)
-                response = make_response(result_of_delete)
-            else:
-                result_of_delete = self.__delete_by_name(name)
-                response = make_response(result_of_delete)
-            return response
+        if article_id is None and name is None:
+            result_of_delete = self.__delete()
+            response = make_response(result_of_delete)
+        elif name is None:
+            result_of_delete = self.__delete_by_id(article_id)
+            response = make_response(result_of_delete)
         else:
-            raise SystemError("Delete article, authorization error")
+            result_of_delete = self.__delete_by_name(name)
+            response = make_response(result_of_delete)
+        return response
 
     def __delete(self) -> tuple:
         '''
@@ -305,8 +277,8 @@ class ArticleView(MethodView):
 class LikeView(MethodView):
     def __init__(self):
         self.controller = LikeController()
-        self.auth = AuthController()
 
+    @authorize
     def get(self, article_id: Optional[str], name: Optional[str]) -> Response:
         '''
         Processes a get request to get likes of articles:
@@ -315,21 +287,16 @@ class LikeView(MethodView):
         :param name: - article title
         :return: all likes or like
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            if article_id is None and name is None:
-                all_likes = self.__get()
-                response = make_response(all_likes)
-            elif name is None:
-                like_by_id = self.__get_by_id(article_id)
-                response = make_response(like_by_id)
-            else:
-                like_by_name = self.__get_by_name(name)
-                response = make_response(like_by_name)
-            return response
+        if article_id is None and name is None:
+            all_likes = self.__get()
+            response = make_response(all_likes)
+        elif name is None:
+            like_by_id = self.__get_by_id(article_id)
+            response = make_response(like_by_id)
         else:
-            raise SystemError("Get like, authorization error")
+            like_by_name = self.__get_by_name(name)
+            response = make_response(like_by_name)
+        return response
 
     def __get(self) -> tuple:
         '''
@@ -361,22 +328,19 @@ class LikeView(MethodView):
         like_by_name = self.controller.get_by_name(name)
         return like_by_name
 
+    @authorize
     def post(self) -> Response:
         '''
         Creating new like
         :return: - successful creating response
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            body_of_request = request.get_json()
-            SchemaAddLike().load(body_of_request)
-            result_of_create = self.controller.post(body_of_request)
-            response = make_response(result_of_create)
-            return response
-        else:
-            raise SystemError("Create like, authorization error")
+        body_of_request = request.get_json()
+        SchemaAddLike().load(body_of_request)
+        result_of_create = self.controller.post(body_of_request)
+        response = make_response(result_of_create)
+        return response
 
+    @authorize
     def delete(self, article_id: Optional[str], author_id: Optional[str], title: Optional[str],  name: Optional[str])\
             -> Response:
         '''
@@ -388,21 +352,16 @@ class LikeView(MethodView):
         :param name: - unique user nic name
         :return: - successful delete response
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            if article_id is None and title is None:
-                result_of_delete = self.__delete()
-                response = make_response(result_of_delete)
-            elif name is None and title is None:
-                result_of_delete = self.__delete_by_id(article_id, author_id)
-                response = make_response(result_of_delete)
-            else:
-                result_of_delete = self.__delete_by_name(title, name)
-                response = make_response(result_of_delete)
-            return response
+        if article_id is None and title is None:
+            result_of_delete = self.__delete()
+            response = make_response(result_of_delete)
+        elif name is None and title is None:
+            result_of_delete = self.__delete_by_id(article_id, author_id)
+            response = make_response(result_of_delete)
         else:
-            raise SystemError("Delete like, authorization error")
+            result_of_delete = self.__delete_by_name(title, name)
+            response = make_response(result_of_delete)
+        return response
 
     def __delete(self) -> tuple:
         '''
@@ -440,8 +399,8 @@ class LikeView(MethodView):
 class CommentView(MethodView):
     def __init__(self):
         self.controller = CommentController()
-        self.auth = AuthController()
 
+    @authorize
     def get(self, article_id: Optional[str], name: Optional[str]) -> Response:
         '''
         Processes a get request to get comments of articles:
@@ -450,21 +409,16 @@ class CommentView(MethodView):
         :param name:  article title
         :return: all comments or comment
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            if article_id is None and name is None:
-                all_comments = self.__get()
-                response = make_response(all_comments)
-            elif name is None:
-                comment_by_id = self.__get_by_id(article_id)
-                response = make_response(comment_by_id)
-            else:
-                comment_by_name = self.__get_by_name(name)
-                response = make_response(comment_by_name)
-            return response
+        if article_id is None and name is None:
+            all_comments = self.__get()
+            response = make_response(all_comments)
+        elif name is None:
+            comment_by_id = self.__get_by_id(article_id)
+            response = make_response(comment_by_id)
         else:
-            raise SystemError("Get comment, authorization error")
+            comment_by_name = self.__get_by_name(name)
+            response = make_response(comment_by_name)
+        return response
 
     def __get(self) -> tuple:
         '''
@@ -496,38 +450,31 @@ class CommentView(MethodView):
         comment_by_name = self.controller.get_by_name(name)
         return comment_by_name
 
+    @authorize
     def post(self) -> Response:
         '''
         Creating new comment
         :return: - successful creating response
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            body_of_request = request.get_json()
-            SchemaAddComment().load(body_of_request)
-            result_of_create = self.controller.post(body_of_request)
-            response = make_response(result_of_create)
-            return response
-        else:
-            raise SystemError("Create comment, authorization error")
+        body_of_request = request.get_json()
+        SchemaAddComment().load(body_of_request)
+        result_of_create = self.controller.post(body_of_request)
+        response = make_response(result_of_create)
+        return response
 
+    @authorize
     def put(self) -> Response:
         '''
         Updating comments
         :return: - successful updating response
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            body_of_request = request.get_json()
-            SchemaAddComment().load(body_of_request)
-            result_of_update = self.controller.put(body_of_request)
-            response = make_response(result_of_update)
-            return response
-        else:
-            raise SystemError("Update comment, authorization error")
+        body_of_request = request.get_json()
+        SchemaAddComment().load(body_of_request)
+        result_of_update = self.controller.put(body_of_request)
+        response = make_response(result_of_update)
+        return response
 
+    @authorize
     def delete(self, article_id: Optional[str], author_id: Optional[str], title: Optional[str], name: Optional[str])\
             -> Response:
         '''
@@ -539,21 +486,16 @@ class CommentView(MethodView):
         :param name: - unique user nic name
         :return: - successful delete response
         '''
-        token = token_extraction()
-        authorized = self.auth.authorization(token)
-        if authorized:
-            if article_id is None and title is None:
-                result_of_delete = self.__delete()
-                response = make_response(result_of_delete)
-            elif name is None and title is None:
-                result_of_delete = self.__delete_by_id(article_id, author_id)
-                response = make_response(result_of_delete)
-            else:
-                result_of_delete = self.__delete_by_name(title, name)
-                response = make_response(result_of_delete)
-            return response
+        if article_id is None and title is None:
+            result_of_delete = self.__delete()
+            response = make_response(result_of_delete)
+        elif name is None and title is None:
+            result_of_delete = self.__delete_by_id(article_id, author_id)
+            response = make_response(result_of_delete)
         else:
-            raise SystemError("Delete comment, authorization error")
+            result_of_delete = self.__delete_by_name(title, name)
+            response = make_response(result_of_delete)
+        return response
 
     def __delete(self) -> tuple:
         '''
