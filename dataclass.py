@@ -102,9 +102,4 @@ class CommentByName:
     user_name: str
 
 
-def main():
-    pass
 
-
-if __name__ == '__main__':
-    main()

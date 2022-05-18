@@ -7,7 +7,7 @@ from flask.views import MethodView
 from controller import ArticleController, LikeController, CommentController, UserController
 from decorators import authorize
 from validation import SchemaAddArticle, SchemaUpdateArticle, SchemaAddLike, SchemaAddComment, SchemaAddUser, \
-    SchemaUpdateUser
+                       SchemaUpdateUser
 
 
 class UserView(MethodView):

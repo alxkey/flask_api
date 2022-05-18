@@ -97,11 +97,11 @@ class UserController:
         :return: instance of user dataclass
         '''
         user = UserUpdate(user_id=data_user.get('user_id'),
-                    name=data_user.get('name'),
-                    password=data_user.get('password'),
-                    first_name=data_user.get('first_name'),
-                    last_name=data_user.get('last_name'),
-                    age=data_user.get('age'))
+                          name=data_user.get('name'),
+                          password=data_user.get('password'),
+                          first_name=data_user.get('first_name'),
+                          last_name=data_user.get('last_name'),
+                          age=data_user.get('age'))
         return user
 
     def delete(self) -> tuple:

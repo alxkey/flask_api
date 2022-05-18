@@ -1,5 +1,6 @@
 from marshmallow import Schema, fields, validate
 
+
 class SchemaAddUser(Schema):
     name = fields.Str(validate=validate.Length(min=4), required=True)
     password = fields.Str(validate=validate.Length(min=6, max=20), required=True)

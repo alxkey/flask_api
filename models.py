@@ -4,7 +4,7 @@ import psycopg2
 
 from config import DB_NAME, USER, PASSWORD, HOST, PORT
 from dataclass import User, UserUpdate, UserResult, UserGet, ArticleResult, Article, ArticleUpdate, Like, LikeGet, \
-    LikeGetById, Comment, CommentCreate, CommentById, CommentByName
+                      LikeGetById, Comment, CommentCreate, CommentById, CommentByName
 from decorators import try_catch
 from tokens import TokenGen
 
