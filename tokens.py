@@ -22,7 +22,7 @@ class TokenGen:
 
 
 class TokenCheck:
-    def __init__(self, token, id):
+    def __init__(self):
         self.key = SECRET_KEY
 
     def __check(self, token, id):
