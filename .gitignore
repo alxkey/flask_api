@@ -3,4 +3,7 @@
 /venv
 /templates
 /static
+/.idea
+/tests
+/.gitignore
 
