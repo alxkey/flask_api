@@ -26,8 +26,15 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           
-      - name: Run command 'ls'
-        run: ls -l
+      - name: Run command app
+        run: 
+          export FLASK_APP=app.py
+          export FLASK_ENV=development
+          export FLASK_DEBUG=0
+          flask run
+        
+        
+        
       
 
    
