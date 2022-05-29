@@ -5,7 +5,7 @@ from views import ArticleView, LikeView, CommentView, UserView
 
 app = Flask(__name__)
 
-logger.info('########################## START ##############################')
+logger.info('######################### START #############################')
 
 api_user = UserView.as_view('user_view')
 app.add_url_rule('/users', defaults={'user_id': None, 'name': None}, view_func=api_user, methods=['GET', ])
